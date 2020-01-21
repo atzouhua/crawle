@@ -1,0 +1,6 @@
+requests
+pyquery
+progress
+pymysql
+redis
+peewee
