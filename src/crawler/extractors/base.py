@@ -92,19 +92,15 @@ class BaseCrawler:
             result.append({'title': title, 'url': url, 'thumbnail': thumbnail})
         return result
 
-    def _post_handler(self, url, **kwargs):
-        if type(url) == dict and url.get('url'):
-            url = url.get('url')
+    def _post_handler(self, task, **kwargs):
+        if type(task) == dict and task.get('url'):
+            task = task.get('url')
 
-        html = self.http.html(url)
+        html = self.http.html(task)
         doc = pyquery.PyQuery(html)
-        data = {}
-        for field, rule in self.post_rule:
-            data[field] = doc(rule)
-        return self.after_post_handler(**data, doc=doc, **kwargs)
-
-    @staticmethod
-    def after_post_handler(**kwargs):
+        for field, rule in self.post_rule.items():
+            kwargs.setdefault(field, doc(rule))
+        kwargs.setdefault('doc', doc)
         return kwargs
 
     def execute(self, tasks: list, fn, callback=None, **kwargs):

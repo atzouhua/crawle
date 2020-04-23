@@ -7,11 +7,11 @@ from crawler.common import r1, r2
 class SouSi(BaseCrawler):
 
     def __init__(self):
-        BaseCrawler.__init__(self)
+        super().__init__()
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
             'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 2,
+            'end_page': 1,
             'start_page': 1,
             'page_rule': {
                 "list": "#yuanma_downlist_bg .yuanma_downlist_box",
@@ -38,6 +38,7 @@ class SouSi(BaseCrawler):
                              "RU1MM": "ru1mm", "HEISIAI": "heisiai", "飞图网": "ftoow"}
 
     def _post_handler(self, task, **kwargs):
+        data = super()._post_handler(task, **kwargs)
         if type(task) == dict and task.get('url'):
             task = task.get('url')
 
