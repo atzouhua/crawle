@@ -3,7 +3,7 @@ import json
 import pyquery
 
 from src.crawler.extractors import BaseProvider
-from src.crawler.utils.common import format_url, get_book_item_name
+from crawler.common import format_url, get_book_item_name
 
 
 class Mkzhan(BaseProvider):

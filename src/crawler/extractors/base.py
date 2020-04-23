@@ -8,7 +8,7 @@ from progress.bar import Bar
 
 from crawler.utils.http import HttpClient
 from crawler.utils.log import Logging
-from crawler.utils.common import format_url, get_progress_bar, get_tasks
+from crawler.common import format_url, get_progress_bar, get_tasks
 from crawler.utils.config import Config
 from crawler.utils.exceptions import HttpException
 
@@ -71,18 +71,16 @@ class BaseCrawler:
         return self._post_handler(post_url, i=1, n=1)
 
     def _index_handler(self, url: str, **kwargs) -> list:
-        page_rule = self.rule.get('page_rule')
-        title_rule = page_rule.get('title')
-        url_rule = page_rule.get('url')
-        thumbnail_rule = page_rule.get('thumbnail')
+        title_rule = self.page_rule.get('title')
+        thumbnail_rule = self.page_rule.get('thumbnail')
 
         self.logger.info('[%s/%s] Get page: %s' % (kwargs.get('i'), kwargs.get('n'), url))
         html = self.http.html(url)
         doc = pyquery.PyQuery(html)
-        elements = doc(page_rule.get('list'))
+        elements = doc(self.page_rule.get('list'))
         result = []
         for element in elements.items():
-            element_a = element(url_rule)
+            element_a = element(self.page_rule.get('url'))
             title = element_a.text()
             url = format_url(element_a.attr('href'), self.rule.get('base_url'))
             thumbnail = ''
@@ -95,21 +93,19 @@ class BaseCrawler:
         return result
 
     def _post_handler(self, url, **kwargs):
-        post_rule = self.rule.get('post_rule')
-        title_rule = post_rule.get('title')
-        content_rule = post_rule.get('content')
-        thumbnail_rule = post_rule.get('thumbnail')
-
         if type(url) == dict and url.get('url'):
             url = url.get('url')
 
         html = self.http.html(url)
         doc = pyquery.PyQuery(html)
-        content = doc(content_rule)
-        title = doc(title_rule).text()
-        thumbnail = doc(thumbnail_rule)
-        print('[%s/%s]' % (kwargs.get('i'), kwargs.get('n')), title, content, thumbnail, url)
-        return [title, content, thumbnail]
+        data = {}
+        for field, rule in self.post_rule:
+            data[field] = doc(rule)
+        return self.after_post_handler(**data, doc=doc, **kwargs)
+
+    @staticmethod
+    def after_post_handler(**kwargs):
+        return kwargs
 
     def execute(self, tasks: list, fn, callback=None, **kwargs):
         tasks.reverse()
@@ -166,3 +162,11 @@ class BaseCrawler:
     def publish(self, data):
         res = self.http.html(self.publish_api, data)
         return res
+
+    @property
+    def post_rule(self):
+        return self.rule.get('post_rule')
+
+    @property
+    def page_rule(self):
+        return self.rule.get('page_rule')

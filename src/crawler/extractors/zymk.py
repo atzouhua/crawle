@@ -4,7 +4,7 @@ import re
 import pyquery
 
 from src.crawler.extractors import BaseProvider
-from src.crawler.utils.common import format_url
+from crawler.common import format_url
 
 
 class Zymk(BaseProvider):

@@ -1,19 +1,18 @@
 import pyquery
 
 from .base import BaseCrawler
-from crawler.utils.common import r1, r2
+from crawler.common import r1, r2
 
 
-class Sousi8(BaseCrawler):
+class SouSi(BaseCrawler):
 
     def __init__(self):
         BaseCrawler.__init__(self)
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
             'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 10,
+            'end_page': 2,
             'start_page': 1,
-
             'page_rule': {
                 "list": "#yuanma_downlist_bg .yuanma_downlist_box",
                 "url": " .geme_dl_info strong a",
@@ -39,18 +38,13 @@ class Sousi8(BaseCrawler):
                              "RU1MM": "ru1mm", "HEISIAI": "heisiai", "飞图网": "ftoow"}
 
     def _post_handler(self, task, **kwargs):
-        post_rule = self.rule.get('post_rule')
-        title_rule = post_rule.get('title')
-        content_rule = post_rule.get('content')
-        thumbnail_rule = post_rule.get('thumbnail')
-
         if type(task) == dict and task.get('url'):
             task = task.get('url')
 
         html = self.http.html(task)
         doc = pyquery.PyQuery(html)
 
-        content_elements = doc(content_rule)
+        content_elements = doc(self.post_rule.get('content'))
         content = ''
         for element in content_elements.items():
             href = element.attr('href')
@@ -61,11 +55,11 @@ class Sousi8(BaseCrawler):
 
         category = doc('.down_r_title a').eq(2).text().replace('写真', '').replace('套图', '')
         category, alias = self.get_title_category_alias(category)
-        title = doc(title_rule).text()
-        title = r2('(\[.+?\])', title)
-        title2 = r1('(VOL|NO)\.\d+', title, 0, title)
-        star = r1('((VOL|NO)\.\d+)\s([^[]+)', title, 3)
-        thumbnail = doc(thumbnail_rule)
+        title = doc(self.post_rule.get('title')).text()
+        title = r2(r'(\[.+?\])', title)
+        title2 = r1(r'(VOL|NO)\.\d+', title, 0, title)
+        star = r1(r'((VOL|NO)\.\d+)\s([^[]+)', title, 3)
+        thumbnail = doc(self.post_rule.get('thumbnail'))
         print('[%s/%s]' % (kwargs.get('i'), kwargs.get('n')), title, [category, alias], [title2], [star])
         return [title, content, thumbnail]
 

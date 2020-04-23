@@ -4,7 +4,7 @@ import os
 import time
 from logging import FileHandler
 
-from .common import LOG_PATH
+from crawler.common import LOG_PATH
 
 DEFAULT_FORMATTER = '%(asctime)s[%(filename)s:%(lineno)d][%(levelname)s]:%(message)s'
 

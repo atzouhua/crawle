@@ -1,17 +1,20 @@
 import os
 import re
+from os.path import dirname, realpath
 
 from progress.bar import Bar
 
-from src.crawler.utils.config import Config
+from .utils.config import Config
 
 SS_PROXIES = {
     'http': 'http://127.0.0.1:1080',
     'https': 'http://127.0.0.1:1080',
 }
 
-DATA_PATH = os.path.join(os.path.abspath('.'), 'data')
+ROOT_PATH = dirname(dirname(dirname(realpath(__file__))))
+DATA_PATH = os.path.join(ROOT_PATH, 'data')
 LOG_PATH = os.path.join(DATA_PATH, 'logs')
+
 if not os.path.isdir(DATA_PATH):
     os.makedirs(DATA_PATH)
 

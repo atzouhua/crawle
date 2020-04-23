@@ -1,4 +1,4 @@
-from src.crawler.cli import app_main
+from .cli import app_main
 
 
 def main():

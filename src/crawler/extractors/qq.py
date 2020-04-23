@@ -6,7 +6,7 @@ from concurrent.futures import Future
 import pyquery
 
 from src.crawler.extractors import BaseProvider
-from src.crawler.utils.common import format_url
+from crawler.common import format_url
 from src.crawler.utils.config import get_config
 
 
