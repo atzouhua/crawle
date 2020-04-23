@@ -1,0 +1,52 @@
+import re
+
+from .base import BaseCrawler
+
+
+class MgStage(BaseCrawler):
+
+    def __init__(self):
+        super().__init__()
+        self.base_url = 'http://www.mgstage.com'
+        self.rule = {
+            'page_list_url': '/search/search.php?search_word=&image_word_ids[]=nanpatv&sort=new&list_cnt=120&disp_type=thumb&page=%page',
+            'end_page': 1,
+            'start_page': 1,
+            'page_rule': {
+                "list": "div.rank_list li h5 a",
+            },
+            'post_rule': {
+                "title": "h1.tag",
+            },
+            'base_url': self.base_url
+        }
+
+    def before_run(self):
+        super(MgStage, self).before_run()
+        # self.http.headers['Cookie'] = 'adc=1'
+        self.http.request.cookies.set('adc', '1')
+
+    def _post_handler(self, task, **kwargs):
+        data = super(MgStage, self)._post_handler(task, **kwargs)
+        doc = data.get('doc')
+        data['alias'] = task.split('/')[-2]
+        data['thumbnail'] = doc('#EnlargeImage').attr('href')
+        data['images'] = self._get_images(doc)
+        del data['doc']
+        print(data)
+
+    @staticmethod
+    def _get_images(doc):
+        elements = doc('a.sample_image')
+        image_list = []
+        for element in elements.items():
+            image_list.append(element.attr('href'))
+
+        if len(image_list) < 5:
+            end_image = image_list[-1]
+            num = int(re.search(r'cap_e_(\d+)_', end_image).group(1))
+            for i in range(num, num + 6):
+                image = re.sub(r'cap_e_(\d+)_', 'cap_e_{}_'.format(i), end_image)
+                image_list.append(image)
+
+        return image_list

@@ -6,11 +6,11 @@ from concurrent import futures
 import pyquery
 from progress.bar import Bar
 
-from crawler.utils.http import HttpClient
-from crawler.utils.log import Logging
-from crawler.common import format_url, get_progress_bar, get_tasks
-from crawler.utils.config import Config
-from crawler.utils.exceptions import HttpException
+from ..utils.http import HttpClient
+from ..utils.log import Logging
+from ..common import format_url, get_progress_bar, get_tasks, SS_PROXIES
+from ..utils.config import Config
+from ..utils.exceptions import HttpException
 
 
 class BaseCrawler:
@@ -26,7 +26,7 @@ class BaseCrawler:
         self.data = []
 
         self.logger = Logging.getLogger()
-        self.proxies = None
+        self.proxies = SS_PROXIES
         self.charset = 'utf-8'
         self.http = HttpClient()
         self.begin_tme = time.time()
@@ -59,6 +59,8 @@ class BaseCrawler:
 
         n = len(result)
         self.logger.info('Get task done. tasks count: %s' % n)
+        if not n:
+            return
 
         thread_num = min(n, Config.get('thread', self.thread_num))
         self.bar = get_progress_bar(n)
@@ -78,11 +80,11 @@ class BaseCrawler:
         html = self.http.html(url)
         doc = pyquery.PyQuery(html)
         elements = doc(self.page_rule.get('list'))
+
         result = []
         for element in elements.items():
-            element_a = element(self.page_rule.get('url'))
-            title = element_a.text()
-            url = format_url(element_a.attr('href'), self.rule.get('base_url'))
+            title = element.text()
+            url = format_url(element.attr('href'), self.rule.get('base_url'))
             thumbnail = ''
 
             if title_rule:
@@ -99,7 +101,7 @@ class BaseCrawler:
         html = self.http.html(task)
         doc = pyquery.PyQuery(html)
         for field, rule in self.post_rule.items():
-            kwargs.setdefault(field, doc(rule))
+            kwargs[field] = doc(rule).text()
         kwargs.setdefault('doc', doc)
         return kwargs
 
