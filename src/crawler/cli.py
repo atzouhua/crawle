@@ -29,8 +29,8 @@ def script_main():
 def app_main():
     parser = argparse.ArgumentParser()
     parser.add_argument('crawler', nargs='?', default='mgstage')
-    parser.add_argument('action', nargs='?')
-    parser.add_argument('url', nargs='?')
+    parser.add_argument('action', nargs='?', default='')
+    parser.add_argument('url', nargs='?', default='')
     parser.add_argument('-t', '--thread', type=int, default=10)
     parser.add_argument('--start', type=int)
     parser.add_argument('--end', type=int)

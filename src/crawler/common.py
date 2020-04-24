@@ -69,14 +69,14 @@ def get_progress_bar(_max) -> Bar:
 
 
 def get_book_item_name(item_name, exclude_list=None):
-    s = re.search('^[0-9]*$', item_name)
-    if s:
+    r = re.search('^[0-9]*$', item_name)
+    if r:
         item_name = '第%s话' % item_name
     return item_name
 
 
 def r1(pattern, text, group=1, default=None):
-    if not text:
+    if not text or type(text) != str:
         return None
 
     m = re.search(pattern, text, re.IGNORECASE)

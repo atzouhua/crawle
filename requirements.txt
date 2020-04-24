@@ -2,4 +2,3 @@ requests
 pyquery
 progress
 pymysql
-peewee

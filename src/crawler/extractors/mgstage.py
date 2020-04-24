@@ -1,6 +1,11 @@
 import re
+from urllib.parse import urlencode
 
 from .base import BaseCrawler
+from ..common import r1
+
+IMAGE_WORD_LIST = ['nanpatv', 'documentv', 'ara', 'prestigepremium', 'luxutv', 'dokikaku',
+                   'orenoshirouto', 'scute', 'shirouto']
 
 
 class MgStage(BaseCrawler):
@@ -9,7 +14,8 @@ class MgStage(BaseCrawler):
         super().__init__()
         self.base_url = 'http://www.mgstage.com'
         self.rule = {
-            'page_list_url': '/search/search.php?search_word=&image_word_ids[]=nanpatv&sort=new&list_cnt=120&disp_type=thumb&page=%page',
+            'page_list_url': '/search/search.php?search_word=&{}&sort=new&list_cnt=120&disp_type=thumb&page=%page'.format(
+                urlencode({'image_word_ids[]': IMAGE_WORD_LIST}, doseq=True)),
             'end_page': 1,
             'start_page': 1,
             'page_rule': {
@@ -23,17 +29,17 @@ class MgStage(BaseCrawler):
 
     def before_run(self):
         super(MgStage, self).before_run()
-        # self.http.headers['Cookie'] = 'adc=1'
         self.http.request.cookies.set('adc', '1')
 
     def _post_handler(self, task, **kwargs):
         data = super(MgStage, self)._post_handler(task, **kwargs)
         doc = data.get('doc')
-        data['alias'] = task.split('/')[-2]
+        data['publish_time'] = r1(r'<td>(\d{4}/\d{1,2}/\d{1,2})</td>', doc.html()).replace('/', '-')
+        data['alias'] = task.strip('/').split('/')[-1]
         data['thumbnail'] = doc('#EnlargeImage').attr('href')
         data['images'] = self._get_images(doc)
         del data['doc']
-        print(data)
+        self.processing(kwargs.get('bar'), data['title'], 'done')
 
     @staticmethod
     def _get_images(doc):
