@@ -1,3 +1,4 @@
+import json
 import re
 from urllib.parse import urlencode
 
@@ -35,11 +36,12 @@ class MgStage(BaseCrawler):
             'publish_time': r1(r'<td>(\d{4}/\d{1,2}/\d{1,2})</td>', doc.html()).replace('/', '-'),
             'alias': task.strip('/').split('/')[-1],
             'thumbnail': doc('#EnlargeImage').attr('href'),
-            'images': self._get_images(doc),
+            'images': json.dumps(self._get_images(doc)),
             'url': data['url'],
             'title': data['title'],
         }
         del data
+
         self.processing(kwargs.get('bar'), params['alias'], 'done')
         self.data.append(params)
         if len(self.data) > 50:

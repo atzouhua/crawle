@@ -28,14 +28,14 @@ class DB:
     @classmethod
     def insert(cls, table, data: dict):
         sql = cls._format_insert(table, data)
-        return cls._query_internal(sql, list(data.values()), 'lastrowid')
+        return cls._query_internal(sql, tuple(data.values()), 'lastrowid')
 
     @classmethod
     def insert_all(cls, table, data: list):
         sql = cls._format_insert(table, data[0])
         params = []
         for i in data:
-            params.append(list(i.values()))
+            params.append(tuple(i.values()))
 
         del data
         with DB() as db:
