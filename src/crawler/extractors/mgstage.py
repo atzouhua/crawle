@@ -39,7 +39,7 @@ class MgStage(BaseCrawler):
         data['thumbnail'] = doc('#EnlargeImage').attr('href')
         data['images'] = self._get_images(doc)
         del data['doc']
-        self.processing(kwargs.get('bar'), data['title'], 'done')
+        self.processing(kwargs.get('bar'), data['alias'], 'done')
 
     @staticmethod
     def _get_images(doc):
