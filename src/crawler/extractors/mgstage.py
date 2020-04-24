@@ -40,7 +40,7 @@ class MgStage(BaseCrawler):
             'publish_time': r1(r'(\d{4}/\d{1,2}/\d{1,2})', doc.html()).replace('/', '-'),
             'alias': task.strip('/').split('/')[-1],
             'thumbnail': doc('#EnlargeImage').attr('href'),
-            # 'images': json.dumps(_get_images(doc)),
+            'images': json.dumps(_get_images(doc)),
             'url': data['url'],
             'title': _format_title(data['title']),
             'star': star,
