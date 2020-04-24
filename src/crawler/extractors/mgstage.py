@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 
 from .base import BaseCrawler
 from ..common import r1
+from ..utils.db import DB
 
 IMAGE_WORD_LIST = ['nanpatv', 'documentv', 'ara', 'prestigepremium', 'luxutv', 'dokikaku',
                    'orenoshirouto', 'scute', 'shirouto']
@@ -18,12 +19,8 @@ class MgStage(BaseCrawler):
                 urlencode({'image_word_ids[]': IMAGE_WORD_LIST}, doseq=True)),
             'end_page': 1,
             'start_page': 1,
-            'page_rule': {
-                "list": "div.rank_list li h5 a",
-            },
-            'post_rule': {
-                "title": "h1.tag",
-            },
+            'page_rule': {"list": "div.rank_list li h5 a"},
+            'post_rule': {"title": "h1.tag"},
             'base_url': self.base_url
         }
 
@@ -34,12 +31,20 @@ class MgStage(BaseCrawler):
     def _post_handler(self, task, **kwargs):
         data = super(MgStage, self)._post_handler(task, **kwargs)
         doc = data.get('doc')
-        data['publish_time'] = r1(r'<td>(\d{4}/\d{1,2}/\d{1,2})</td>', doc.html()).replace('/', '-')
-        data['alias'] = task.strip('/').split('/')[-1]
-        data['thumbnail'] = doc('#EnlargeImage').attr('href')
-        data['images'] = self._get_images(doc)
-        del data['doc']
-        self.processing(kwargs.get('bar'), data['alias'], 'done')
+        params = {
+            'publish_time': r1(r'<td>(\d{4}/\d{1,2}/\d{1,2})</td>', doc.html()).replace('/', '-'),
+            'alias': task.strip('/').split('/')[-1],
+            'thumbnail': doc('#EnlargeImage').attr('href'),
+            'images': self._get_images(doc),
+            'url': data['url'],
+            'title': data['title'],
+        }
+        del data
+        self.processing(kwargs.get('bar'), params['alias'], 'done')
+        self.data.append(params)
+        if len(self.data) > 50:
+            DB.insert_all('ii_mgstage', self.data)
+            self.data = []
 
     @staticmethod
     def _get_images(doc):
