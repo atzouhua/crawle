@@ -13,16 +13,8 @@ class SouSi(BaseCrawler):
             'page_list_url': '/guochantaotu/list_22_%page.html',
             'end_page': 1,
             'start_page': 1,
-            'page_rule': {
-                "list": "#yuanma_downlist_bg .yuanma_downlist_box",
-                "url": " .geme_dl_info strong a",
-                "thumbnail": ".pic img"
-            },
-            'post_rule': {
-                "title": ".single h1",
-                "thumbnail": ".works-cover img",
-                "content": "#mbtxfont a",
-            },
+            'page_rule': {"list": '.yuanma_downlist_box .pic a'},
+            'post_rule': {"title": ".single h1"},
             'base_url': self.base_url
         }
         self.charset = 'gbk'
@@ -39,13 +31,8 @@ class SouSi(BaseCrawler):
 
     def _post_handler(self, task, **kwargs):
         data = super()._post_handler(task, **kwargs)
-        if type(task) == dict and task.get('url'):
-            task = task.get('url')
-
-        html = self.http.html(task)
-        doc = pyquery.PyQuery(html)
-
-        content_elements = doc(self.post_rule.get('content'))
+        doc = data.get('doc')
+        content_elements = doc('#mbtxfont a')
         content = ''
         for element in content_elements.items():
             href = element.attr('href')

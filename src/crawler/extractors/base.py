@@ -70,7 +70,7 @@ class BaseCrawler:
 
     def action_post(self):
         post_url = Config.get('url')
-        return self._post_handler(post_url, i=1, n=1)
+        return self._post_handler(post_url, i=1, n=1, url=post_url)
 
     def _index_handler(self, url: str, **kwargs) -> list:
         title_rule = self.page_rule.get('title')
@@ -148,7 +148,7 @@ class BaseCrawler:
                     else:
                         n += 1
 
-                b = 64 - n
+                b = 48 - n
                 c = ' ' * b
                 d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
                 message = '[+]: %s%s[\033[%s]' % (title, c, d.format(status))
