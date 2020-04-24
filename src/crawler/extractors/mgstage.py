@@ -2,12 +2,16 @@ import json
 import re
 from urllib.parse import urlencode
 
+import pyquery
+
 from .base import BaseCrawler
-from ..common import r1
+from ..common import r1, SS_PROXIES
 from ..utils.db import DB
 
-IMAGE_WORD_LIST = ['nanpatv', 'documentv', 'ara', 'prestigepremium', 'luxutv', 'dokikaku',
-                   'orenoshirouto', 'scute', 'shirouto']
+IMAGE_WORD_LIST = ['scute', 'prestigepremium', 'luxutv', 'scoop', 'prestige', 'haremtv', 'orenoshirouto', 'ara', 'sq',
+                   'fullsail', 'shirouto', 'naturalhigh', 'hamedori2nd', 'documentv', 'hot', 'ntrnet', 'jackson',
+                   'bullitt', 'doc', 'sukekiyo', 'hoihoiz', 'etiquette', 'sodcreate', 'namanamanet', 'itteq', 'nanpatv',
+                   'kurofune', 'magictabloid', 'kanbi']
 
 
 class MgStage(BaseCrawler):
@@ -16,6 +20,7 @@ class MgStage(BaseCrawler):
         super().__init__()
         self.base_url = 'http://www.mgstage.com'
         self.thread_num = 20
+        self.proxies = SS_PROXIES
         self.rule = {
             'page_list_url': '/search/search.php?search_word=&{}&sort=new&list_cnt=120&disp_type=thumb&page=%page'.format(
                 urlencode({'image_word_ids[]': IMAGE_WORD_LIST}, doseq=True)),
@@ -25,7 +30,6 @@ class MgStage(BaseCrawler):
             'post_rule': {"title": "h1.tag"},
             'base_url': self.base_url
         }
-        DB.query_internal('TRUNCATE ii_mgstage')
 
     def before_run(self):
         super(MgStage, self).before_run()
@@ -38,7 +42,7 @@ class MgStage(BaseCrawler):
             'publish_time': r1(r'<td>(\d{4}/\d{1,2}/\d{1,2})</td>', doc.html()).replace('/', '-'),
             'alias': task.strip('/').split('/')[-1],
             'thumbnail': doc('#EnlargeImage').attr('href'),
-            'images': json.dumps(self._get_images(doc)),
+            'images': json.dumps(_get_images(doc)),
             'url': data['url'],
             'title': data['title'],
         }
@@ -47,7 +51,7 @@ class MgStage(BaseCrawler):
         self.processing(kwargs.get('bar'), params['alias'], 'done')
         self.data.append(params)
         if len(self.data) >= 50:
-            # DB.insert_all('ii_mgstage', self.data)
+            DB.insert_all('ii_mgstage', self.data)
             self.data = []
 
     def after_run(self):
@@ -56,21 +60,35 @@ class MgStage(BaseCrawler):
             DB.insert_all('ii_mgstage', self.data)
             self.data = []
 
-    @staticmethod
-    def _get_images(doc):
-        elements = doc('a.sample_image')
-        image_list = []
+    def get_makes(self):
+        html = self.http.html('https://www.mgstage.com/ppv/makers.php')
+        doc = pyquery.PyQuery(html)
+        elements = doc('.maker_list_box a')
+        data = []
         for element in elements.items():
-            image_list.append(element.attr('href'))
+            href = element.attr('href')
+            href = r1('=(.+)', href)
+            data.append(href)
 
-        if len(image_list) > 10:
-            return image_list[0:10]
+        data = list(set(data))
+        print(data)
+        print(len(data))
 
-        if len(image_list) < 5:
-            end_image = image_list[-1]
-            num = int(re.search(r'cap_e_(\d+)_', end_image).group(1))
-            for i in range(num, num + 6):
-                image = re.sub(r'cap_e_(\d+)_', 'cap_e_{}_'.format(i), end_image)
-                image_list.append(image)
 
-        return image_list
+def _get_images(doc):
+    elements = doc('a.sample_image')
+    image_list = []
+    for element in elements.items():
+        image_list.append(element.attr('href'))
+
+    if len(image_list) > 10:
+        return image_list[0:10]
+
+    if len(image_list) < 5:
+        end_image = image_list[-1]
+        num = int(re.search(r'cap_e_(\d+)_', end_image).group(1))
+        for i in range(num, num + 6):
+            image = re.sub(r'cap_e_(\d+)_', 'cap_e_{}_'.format(i), end_image)
+            image_list.append(image)
+
+    return image_list

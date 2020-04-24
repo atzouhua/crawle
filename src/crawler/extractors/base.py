@@ -6,11 +6,11 @@ from concurrent import futures
 import pyquery
 from progress.bar import Bar
 
-from ..utils.http import HttpClient
-from ..utils.log import Logging
-from ..common import format_url, get_progress_bar, get_tasks, SS_PROXIES
+from ..common import format_url, get_progress_bar, get_tasks
 from ..utils.config import Config
 from ..utils.exceptions import HttpException
+from ..utils.http import HttpClient
+from ..utils.log import Logging
 
 
 class BaseCrawler:
@@ -26,7 +26,7 @@ class BaseCrawler:
         self.data = []
 
         self.logger = Logging.getLogger()
-        self.proxies = SS_PROXIES
+        self.proxies = None
         self.charset = 'utf-8'
         self.http = HttpClient()
         self.begin_tme = time.time()

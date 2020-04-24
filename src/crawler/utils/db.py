@@ -45,14 +45,16 @@ class DB:
         return data
 
     @classmethod
-    def query_internal(cls, sql, params, method):
+    def query_internal(cls, sql, params=None, method=None):
+        data = None
         with DB() as db:
             db.execute(sql, params)
-            invert_op = getattr(db, method)
-            if callable(invert_op):
-                data = invert_op()
-            else:
-                data = invert_op
+            if method:
+                invert_op = getattr(db, method)
+                if callable(invert_op):
+                    data = invert_op()
+                else:
+                    data = invert_op
         return data
 
     @classmethod
@@ -61,7 +63,6 @@ class DB:
         _value = '%s,' * len(fields)
         fields = ','.join(fields)
         return 'INSERT INTO {} ({}) VALUES ({})'.format(table, fields, _value.strip(','))
-
 
 # res = DB.insert("insert into ii_mgstage (title, url) values ('test', 'test')")
 
