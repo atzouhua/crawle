@@ -45,7 +45,7 @@ class DB:
         return data
 
     @classmethod
-    def _query_internal(cls, sql, params, method):
+    def query_internal(cls, sql, params, method):
         with DB() as db:
             db.execute(sql, params)
             invert_op = getattr(db, method)

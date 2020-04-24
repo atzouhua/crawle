@@ -15,6 +15,7 @@ class MgStage(BaseCrawler):
     def __init__(self):
         super().__init__()
         self.base_url = 'http://www.mgstage.com'
+        self.thread_num = 20
         self.rule = {
             'page_list_url': '/search/search.php?search_word=&{}&sort=new&list_cnt=120&disp_type=thumb&page=%page'.format(
                 urlencode({'image_word_ids[]': IMAGE_WORD_LIST}, doseq=True)),
@@ -24,6 +25,7 @@ class MgStage(BaseCrawler):
             'post_rule': {"title": "h1.tag"},
             'base_url': self.base_url
         }
+        DB.query_internal('TRUNCATE ii_mgstage')
 
     def before_run(self):
         super(MgStage, self).before_run()
@@ -44,11 +46,12 @@ class MgStage(BaseCrawler):
 
         self.processing(kwargs.get('bar'), params['alias'], 'done')
         self.data.append(params)
-        if len(self.data) > 50:
-            DB.insert_all('ii_mgstage', self.data)
+        if len(self.data) >= 50:
+            # DB.insert_all('ii_mgstage', self.data)
             self.data = []
 
     def after_run(self):
+        print(len(self.data))
         if len(self.data):
             DB.insert_all('ii_mgstage', self.data)
             self.data = []
