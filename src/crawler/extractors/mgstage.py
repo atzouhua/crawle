@@ -48,6 +48,11 @@ class MgStage(BaseCrawler):
             DB.insert_all('ii_mgstage', self.data)
             self.data = []
 
+    def after_run(self):
+        if len(self.data):
+            DB.insert_all('ii_mgstage', self.data)
+            self.data = []
+
     @staticmethod
     def _get_images(doc):
         elements = doc('a.sample_image')
