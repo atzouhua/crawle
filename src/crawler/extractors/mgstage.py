@@ -55,6 +55,9 @@ class MgStage(BaseCrawler):
         for element in elements.items():
             image_list.append(element.attr('href'))
 
+        if len(image_list) > 10:
+            return image_list[0:10]
+
         if len(image_list) < 5:
             end_image = image_list[-1]
             num = int(re.search(r'cap_e_(\d+)_', end_image).group(1))
