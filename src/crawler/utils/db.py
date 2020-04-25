@@ -53,14 +53,17 @@ class DB:
     def query_internal(cls, sql, params=None, method=None):
         data = None
         with DB() as db:
-            db.execute(sql, params)
-            if method:
-                invert_op = getattr(db, method)
-                if callable(invert_op):
-                    data = invert_op()
-                else:
-                    data = invert_op
-        return data
+            try:
+                db.execute(sql, params)
+                if method:
+                    invert_op = getattr(db, method)
+                    if callable(invert_op):
+                        data = invert_op()
+                    else:
+                        data = invert_op
+            except Exception as e:
+                Logging.get(__name__).exception(e)
+            return data
 
     @classmethod
     def _format_insert(cls, table, data: dict, t='INSERT'):

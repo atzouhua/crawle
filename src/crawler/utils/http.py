@@ -22,7 +22,7 @@ class HttpClient:
             'User-Agent': FakerUa.get_ua()
         }
         self.proxies = None
-        self.logger = Logging.getLogger(__name__)
+        self.logger = Logging.get(__name__)
         self.error = None
         self.charset = 'utf-8'
 

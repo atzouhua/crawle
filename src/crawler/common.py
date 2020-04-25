@@ -77,7 +77,7 @@ def get_book_item_name(item_name, exclude_list=None):
 
 def r1(pattern, text, group=1, default=None):
     if not text or type(text) != str:
-        return None
+        return default
 
     m = re.search(pattern, text, re.IGNORECASE)
     if m:

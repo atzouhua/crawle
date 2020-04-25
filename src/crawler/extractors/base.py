@@ -1,3 +1,4 @@
+import inspect
 import threading
 import time
 import unicodedata
@@ -25,7 +26,7 @@ class BaseCrawler:
         self.bar = None
         self.data = []
 
-        self.logger = Logging.get()
+        self.logger = Logging.get(self.__class__.__name__)
         self.proxies = None
         self.charset = 'utf-8'
         self.http = HttpClient()

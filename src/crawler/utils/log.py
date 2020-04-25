@@ -20,7 +20,7 @@ class BaseFileHandler(FileHandler):
         FileHandler.__init__(self, 'test', 'a', 'utf-8', True)
 
     def emit(self, record):
-        log_path = os.path.join(LOG_PATH, record.levelname)
+        log_path = os.path.join(LOG_PATH, record.levelname.lower())
         if not os.path.isdir(log_path):
             os.makedirs(log_path)
 
@@ -37,7 +37,7 @@ class BaseFileHandler(FileHandler):
 
 
 def get_current_function_name():
-    return inspect.stack()[-1][1]
+    return inspect.stack()[1][1]
 
 
 class Logging:
