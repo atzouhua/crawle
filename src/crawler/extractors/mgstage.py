@@ -36,17 +36,23 @@ class MgStage(BaseCrawler):
         data = super(MgStage, self)._post_handler(task, **kwargs)
         doc = data.get('doc')
         star, tag = _get_star_tag(doc)
+        images = _get_images(doc)
+
         params = {
             'publish_time': r1(r'(\d{4}/\d{1,2}/\d{1,2})', doc.html()).replace('/', '-'),
             'alias': task.strip('/').split('/')[-1],
             'thumbnail': doc('#EnlargeImage').attr('href'),
-            'images': json.dumps(_get_images(doc)),
+            'images': json.dumps(images),
             'url': data['url'],
             'title': _format_title(data['title']),
             'star': star,
             'tag': tag
         }
         del data
+
+        if not images:
+            self.processing(kwargs.get('bar'), params['alias'], 'fail')
+            return
 
         self.processing(kwargs.get('bar'), params['alias'], 'done')
         self.data.append(params)
@@ -96,20 +102,23 @@ def _format_title(title):
 
 def _get_images(doc):
     elements = doc('a.sample_image')
+    if not len(elements):
+        return None
+
     image_list = []
     for element in elements.items():
         image_list.append(element.attr('href'))
 
-    if len(image_list) > 10:
+    n = len(image_list)
+    if n > 10:
         return image_list[0:10]
 
-    if len(image_list) < 5:
+    if n and n < 5:
         end_image = image_list[-1]
         num = int(re.search(r'cap_e_(\d+)_', end_image).group(1))
         for i in range(num, num + 6):
             image = re.sub(r'cap_e_(\d+)_', 'cap_e_{}_'.format(i), end_image)
             image_list.append(image)
-
     return image_list
 
 
