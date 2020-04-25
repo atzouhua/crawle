@@ -145,5 +145,8 @@ def _star_tag(elements):
                 tag = tag_element.text()
                 if tag in TAGS:
                     tags.append(tag)
-    star = star.split(' ')
+    if star:
+        star = star.split(' ')
+    else:
+        star = []
     return json.dumps(star, ensure_ascii=False), json.dumps(tags, ensure_ascii=False)
