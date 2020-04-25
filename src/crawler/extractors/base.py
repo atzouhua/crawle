@@ -25,7 +25,7 @@ class BaseCrawler:
         self.bar = None
         self.data = []
 
-        self.logger = Logging.getLogger()
+        self.logger = Logging.get()
         self.proxies = None
         self.charset = 'utf-8'
         self.http = HttpClient()

@@ -1,6 +1,8 @@
 from pymysql.cursors import DictCursor
 from pymysql import connect
 
+from crawler.utils.log import Logging
+
 
 class DB:
 
@@ -19,30 +21,33 @@ class DB:
 
     @classmethod
     def one(cls, sql):
-        return cls._query_internal(sql, None, 'fetchone')
+        return cls.query_internal(sql, None, 'fetchone')
 
     @classmethod
     def all(cls, sql):
-        return cls._query_internal(sql, None, 'fetchall')
+        return cls.query_internal(sql, None, 'fetchall')
 
     @classmethod
     def insert(cls, table, data: dict):
         sql = cls._format_insert(table, data)
-        return cls._query_internal(sql, tuple(data.values()), 'lastrowid')
+        return cls.query_internal(sql, tuple(data.values()), 'lastrowid')
 
     @classmethod
     def insert_all(cls, table, data: list):
-        sql = cls._format_insert(table, data[0])
+        sql = cls._format_insert(table, data[0], 'REPLACE')
         params = []
         for i in data:
             params.append(tuple(i.values()))
 
         del data
+        result = None
         with DB() as db:
-            db.executemany(sql, params)
-            data = db.rowcount
-
-        return data
+            try:
+                db.executemany(sql, params)
+                result = db.rowcount
+            except Exception as e:
+                Logging.get(__name__).exception(e)
+        return result
 
     @classmethod
     def query_internal(cls, sql, params=None, method=None):
@@ -58,14 +63,16 @@ class DB:
         return data
 
     @classmethod
-    def _format_insert(cls, table, data: dict):
+    def _format_insert(cls, table, data: dict, t='INSERT'):
         fields = list(data.keys())
         _value = '%s,' * len(fields)
         fields = ','.join(fields)
-        return 'INSERT INTO {} ({}) VALUES ({})'.format(table, fields, _value.strip(','))
+        return '{} INTO {} ({}) VALUES ({})'.format(t, table, fields, _value.strip(','))
+
 
 # res = DB.insert("insert into ii_mgstage (title, url) values ('test', 'test')")
 
 # res = DB.all('select * from ii_mgstage')
 # print(res)
-# print(DB.insert_all('ii_mgstage', [{'title': 99}, {'title': 10}]))
+if __name__ == '__main__':
+    print(DB.insert_all('ii_mgstage', [{'alias': 99}, {'alis': 11}]))

@@ -50,7 +50,7 @@ class Logging:
     console.setLevel(logging.DEBUG)
 
     @classmethod
-    def getLogger(cls, name=None):
+    def get(cls, name=None):
         if not name:
             name = get_current_function_name()
 
