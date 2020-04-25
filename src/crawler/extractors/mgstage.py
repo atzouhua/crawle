@@ -8,7 +8,7 @@ from ..common import r1, SS_PROXIES
 from ..utils.db import DB
 
 TAGS = ['処女', '女捜査官', '痴女', '家庭教師', '妊婦', '美脚', '風俗', '美尻', '巨乳', '美乳', '女医', '乱交', '顔射', '女教師', '淫語',
-        '異物挿入', '母乳', 'SM', '巨尻', '鬼畜', '監禁', '熟女', 'SF', '制服', '痴漢', 'VR', '素人', '爆乳', '美少女', '人妻', '泥酔', '企画', '騎乗位',
+        '異物挿入', '母乳', 'SM', '巨尻', '鬼畜', '監禁', '熟女', 'SF', '制服', '痴漢', 'VR', '素人', '爆乳', '美少女', '人妻', '泥酔', '騎乗位',
         '口内発射', '女子校生', '女子大生', '不倫', '巫女', '近親相姦', '食糞']
 
 
@@ -16,7 +16,7 @@ class MgStage(BaseCrawler):
 
     def __init__(self):
         super().__init__()
-        self.base_url = 'http://www.mgstage.com'
+        self.base_url = 'https://mgstage.atcaoyufei.workers.dev/'
         self.thread_num = 20
         self.proxies = SS_PROXIES
         self.rule = {

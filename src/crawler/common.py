@@ -89,4 +89,4 @@ def r2(pattern, text, repl=''):
     if not text:
         return None
 
-    return re.sub(pattern, repl, text, re.IGNORECASE).strip()
+    return re.sub(pattern, repl, text, re.IGNORECASE | re.DOTALL).strip()
