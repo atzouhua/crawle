@@ -66,6 +66,7 @@ class MgStage(BaseCrawler):
         if len(self.data):
             DB.insert_all('ii_mgstage', self.data)
             self.data = []
+        print(self.process_time())
 
     def _get_makes(self):
         html = self.http.html('https://www.mgstage.com/ppv/makers.php')
