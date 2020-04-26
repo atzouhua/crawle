@@ -12,8 +12,8 @@ class SouSi(BaseCrawler):
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
             'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 1750,
-            'start_page': 1730,
+            'end_page': 1850,
+            'start_page': 1800,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
             'post_rule': {"title": ".single h1"},
             'base_url': self.base_url
@@ -54,7 +54,8 @@ class SouSi(BaseCrawler):
         title = origin_title.replace(category, '')
         return {
             'title': title, 'alias': alias,
-            'star': star.replace('匿名寫真', ''), 'category': category,
+            'star': star.replace('匿名寫真', ''),
+            'category': category,
             'download_link': get_download_link(doc),
             'url': url,
             'status': 1
@@ -69,25 +70,17 @@ class SouSi(BaseCrawler):
 
 
 def get_download_link(doc):
-    html = doc.html()
-    ignore_link_list = ['dbank', 'vdisk', 'guochantaotu', '115', 'vmall']
-
-    if html.find('summary') != -1:
-        summary = doc('p.summary').text()
-        link_list = re.findall(r'[a-zA-z]+://[^\s]*', summary)
+    # ignore_link_list = ['dbank', 'vdisk', 'guochantaotu', '115', 'vmall', 'rayfile']
+    summary = doc('p.summary').text()
+    link_list = re.findall(r'[a-zA-z]+://[^\s]*', summary)
+    if link_list and len(link_list) > 1:
         for link in link_list:
             if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1:
                 return link
-        return ''
 
     content_elements = doc('#mbtxfont a')
-    n = len(content_elements)
     for element in content_elements.items():
         href = element.attr('href')
-        find_n = 0
-        for ignore_link in ignore_link_list:
-            if href.find(ignore_link) != -1:
-                find_n += 1
-        if find_n < n:
+        if href.find('400gb') != -1 or href.find('ctfile') != -1 or href.find('474b') != -1:
             return href
     return ''

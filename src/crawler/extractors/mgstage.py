@@ -16,7 +16,8 @@ class MgStage(BaseCrawler):
 
     def __init__(self):
         super().__init__()
-        self.base_url = 'https://mgstage.atcaoyufei.workers.dev/'
+        # self.base_url = 'https://mgstage.atcaoyufei.workers.dev/'
+        self.base_url = 'https://www.mgstage.com/'
         self.thread_num = 20
         self.proxies = SS_PROXIES
         self.rule = {
