@@ -49,14 +49,13 @@ class MgStage(BaseCrawler):
             'star': star,
             'tag': tag
         }
-        # del data
+        del data
 
         if not images:
             self.processing(kwargs.get('bar'), params['alias'], 'fail')
             return
 
-        # self.processing(kwargs.get('bar'), params['alias'], 'done')
-        print('[{}/{}]: {}'.format(data['i'], data['n'], params.get('title')))
+        self.processing(kwargs.get('bar'), params['alias'], 'done')
         self.data.append(params)
         if len(self.data) >= 50:
             DB.insert_all('ii_mgstage', self.data)
@@ -66,7 +65,6 @@ class MgStage(BaseCrawler):
         if len(self.data):
             DB.insert_all('ii_mgstage', self.data)
             self.data = []
-        print(self.process_time())
 
     def _get_makes(self):
         html = self.http.html('https://www.mgstage.com/ppv/makers.php')
