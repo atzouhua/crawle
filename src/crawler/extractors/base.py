@@ -56,14 +56,17 @@ class BaseCrawler:
             return
 
         thread_num = min(n, 5)
+        if n > 100:
+            thread_num = 20
         result = self.execute(index_tasks, self._index_handler, thread_num=thread_num)
 
+        thread_num = min(n, Config.get('thread', self.thread_num))
+
         n = len(result)
-        self.logger.info('Get task done. tasks count: %s' % n)
+        self.logger.info('Get task done. tasks count: %s, threads: %s' % (n, thread_num))
         if not n:
             return
 
-        thread_num = min(n, Config.get('thread', self.thread_num))
         self.bar = get_progress_bar(n)
         self.execute(result, fn=self.post_handler, callback=self.post_callback, thread_num=thread_num,
                      bar=Bar(max=1))

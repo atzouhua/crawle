@@ -18,7 +18,7 @@ class MgStage(BaseCrawler):
         super().__init__()
         # self.base_url = 'https://mgstage.atcaoyufei.workers.dev/'
         self.base_url = 'https://www.mgstage.com/'
-        self.thread_num = 20
+        self.thread_num = 50
         self.proxies = SS_PROXIES
         self.rule = {
             'page_list_url': '/search/search.php?search_word=&sort=new&list_cnt=120&disp_type=thumb&page=%page',
