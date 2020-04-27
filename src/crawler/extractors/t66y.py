@@ -50,7 +50,7 @@ class T66y(BaseCrawler):
         while True:
             self.reply()
             second = random.randint(1024, 1124)
-            self.logger.info('time wait: {}s'.format(self))
+            self.logger.info('time wait: {}s'.format(second))
             time.sleep(second)
             i += 1
             if i > n:
