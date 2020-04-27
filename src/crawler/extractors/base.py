@@ -161,7 +161,7 @@ class BaseCrawler:
                     b = 48 - n
                     c = ' ' * b
                     d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
-                    message = '[+]: %s%s[\033[%s]' % (message, c, d.format(message))
+                    message = '[+]: %s%s[\033[%s]' % (message, c, d.format(status))
                     _bar.writeln(message)
                     _bar.finish()
                 if self.bar:
