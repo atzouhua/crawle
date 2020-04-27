@@ -167,7 +167,7 @@ class BaseCrawler:
                 if self.bar:
                     self.bar.next()
         else:
-            print("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), message, status))
+            self.logger.info("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), message, status))
 
     def publish(self, data):
         res = self.http.html(self.publish_api, data)
