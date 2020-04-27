@@ -12,13 +12,14 @@ class SouSi(BaseCrawler):
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
             'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 1850,
-            'start_page': 1800,
+            'end_page': 1,
+            'start_page': 1,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
             'post_rule': {"title": ".single h1"},
             'base_url': self.base_url
         }
         self.charset = 'gbk'
+        self.table = 'sousi'
 
     def _post_handler(self, task, **kwargs):
         data = super()._post_handler(task, **kwargs)
@@ -40,7 +41,8 @@ class SouSi(BaseCrawler):
 
         if not params['download_link']:
             params['status'] = 0
-        print(params)
+
+        self.db_publish(params, **kwargs)
 
     def get_default_params(self, doc, url):
         origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())

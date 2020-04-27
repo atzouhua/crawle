@@ -5,7 +5,6 @@ import pyquery
 
 from .base import BaseCrawler
 from ..common import r1, SS_PROXIES
-from ..utils.db import DB
 
 TAGS = ['処女', '女捜査官', '痴女', '家庭教師', '妊婦', '美脚', '風俗', '美尻', '巨乳', '美乳', '女医', '乱交', '顔射', '女教師', '淫語',
         '異物挿入', '母乳', 'SM', '巨尻', '鬼畜', '監禁', '熟女', 'SF', '制服', '痴漢', 'VR', '素人', '爆乳', '美少女', '人妻', '泥酔', '騎乗位',
@@ -20,6 +19,7 @@ class MgStage(BaseCrawler):
         self.base_url = 'https://www.mgstage.com/'
         self.thread_num = 50
         self.proxies = SS_PROXIES
+        self.table = 'mgstage'
         self.rule = {
             'page_list_url': '/search/search.php?search_word=&sort=new&list_cnt=120&disp_type=thumb&page=%page',
             'end_page': 1,
@@ -52,19 +52,10 @@ class MgStage(BaseCrawler):
         del data
 
         if not images:
-            self.processing(kwargs.get('bar'), params['alias'], 'fail')
+            self.processing(kwargs.get('bar'), params['alias'], 'fail', **kwargs)
             return
 
-        self.processing(kwargs.get('bar'), params['alias'], 'done')
-        self.data.append(params)
-        if len(self.data) >= 50:
-            DB.insert_all('ii_mgstage', self.data)
-            self.data = []
-
-    def after_run(self):
-        if len(self.data):
-            DB.insert_all('ii_mgstage', self.data)
-            self.data = []
+        self.db_publish(params, 'alias', **kwargs)
 
     def _get_makes(self):
         html = self.http.html('https://www.mgstage.com/ppv/makers.php')

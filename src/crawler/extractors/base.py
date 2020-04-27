@@ -9,6 +9,7 @@ from progress.bar import Bar
 
 from ..common import format_url, get_progress_bar, get_tasks
 from ..utils.config import Config
+from ..utils.db import DB
 from ..utils.exceptions import HttpException
 from ..utils.http import HttpClient
 from ..utils.log import Logging
@@ -34,13 +35,17 @@ class BaseCrawler:
         self.name = self.__class__.__name__
         self.post_handler = self._post_handler
         self.post_callback = None
+        self.table_prefix = 'ii_'
+        self.table = ''
 
     def before_run(self):
         self.http.charset = self.charset
         self.http.proxies = self.proxies
 
     def after_run(self):
-        pass
+        if len(self.data):
+            DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)
+            self.data = []
 
     def run(self):
         action = 'action_%s' % Config.get('action', 'index')
@@ -141,29 +146,40 @@ class BaseCrawler:
     def process_time(self):
         self.logger.info("%s seconds process time" % (time.time() - self.begin_tme))
 
-    def processing(self, _bar: Bar, title: str, status):
-        with self.lock:
-            if _bar:
-                n = 0
-                title = title.strip()
-                for i in title:
-                    if unicodedata.east_asian_width(i) in ('F', 'W'):
-                        n += 2
-                    else:
-                        n += 1
+    def processing(self, _bar: Bar, title: str, status, **kwargs):
+        if not Config.get('disable_bar'):
+            with self.lock:
+                if _bar:
+                    n = 0
+                    title = title.strip()
+                    for i in title:
+                        if unicodedata.east_asian_width(i) in ('F', 'W'):
+                            n += 2
+                        else:
+                            n += 1
 
-                b = 48 - n
-                c = ' ' * b
-                d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
-                message = '[+]: %s%s[\033[%s]' % (title, c, d.format(status))
-                _bar.writeln(message)
-                _bar.finish()
-            if self.bar:
-                self.bar.next()
+                    b = 48 - n
+                    c = ' ' * b
+                    d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
+                    message = '[+]: %s%s[\033[%s]' % (title, c, d.format(status))
+                    _bar.writeln(message)
+                    _bar.finish()
+                if self.bar:
+                    self.bar.next()
+        else:
+            print("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), title, status))
 
     def publish(self, data):
         res = self.http.html(self.publish_api, data)
         return res
+
+    def db_publish(self, params: dict, bar_field='title', **kwargs):
+        self.processing(kwargs.get('bar'), params[bar_field], 'done', **kwargs)
+
+        self.data.append(params)
+        if len(self.data) >= 50:
+            DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)
+            self.data = []
 
     @property
     def post_rule(self):
