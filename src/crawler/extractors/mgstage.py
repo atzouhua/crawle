@@ -52,10 +52,10 @@ class MgStage(BaseCrawler):
         del data
 
         if not images:
-            self.processing(kwargs.get('bar'), params['alias'], 'fail', **kwargs)
+            self.processing(kwargs.get('bar'), message=params['alias'], status='fail', **kwargs)
             return
 
-        self.db_publish(params, 'alias', **kwargs)
+        self.db_publish(params, bar_field='alias', **kwargs)
 
     def _get_makes(self):
         html = self.http.html('https://www.mgstage.com/ppv/makers.php')

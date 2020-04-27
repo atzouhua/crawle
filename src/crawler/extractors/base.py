@@ -146,13 +146,13 @@ class BaseCrawler:
     def process_time(self):
         self.logger.info("%s seconds process time" % (time.time() - self.begin_tme))
 
-    def processing(self, _bar: Bar, title: str, status, **kwargs):
+    def processing(self, _bar: Bar, message: str, status, **kwargs):
         if not Config.get('disable_bar'):
             with self.lock:
                 if _bar:
                     n = 0
-                    title = title.strip()
-                    for i in title:
+                    message = message.strip()
+                    for i in message:
                         if unicodedata.east_asian_width(i) in ('F', 'W'):
                             n += 2
                         else:
@@ -161,20 +161,20 @@ class BaseCrawler:
                     b = 48 - n
                     c = ' ' * b
                     d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
-                    message = '[+]: %s%s[\033[%s]' % (title, c, d.format(status))
+                    message = '[+]: %s%s[\033[%s]' % (message, c, d.format(message))
                     _bar.writeln(message)
                     _bar.finish()
                 if self.bar:
                     self.bar.next()
         else:
-            print("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), title, status))
+            print("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), message, status))
 
     def publish(self, data):
         res = self.http.html(self.publish_api, data)
         return res
 
     def db_publish(self, params: dict, bar_field='title', **kwargs):
-        self.processing(kwargs.get('bar'), params[bar_field], 'done', **kwargs)
+        self.processing(_bar=kwargs.get('bar'), message=params[bar_field], status='done', **kwargs)
 
         self.data.append(params)
         if len(self.data) >= 50:
