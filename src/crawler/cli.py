@@ -28,9 +28,9 @@ def script_main():
 
 def app_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('crawler', nargs='?', default='t66y')
-    parser.add_argument('action', nargs='?', default='')
-    parser.add_argument('url', nargs='?', default='')
+    parser.add_argument('crawler', nargs='?', default='mkzhan')
+    parser.add_argument('action', nargs='?', default='post')
+    parser.add_argument('url', nargs='?', default='https://www.mkzhan.com/49733/')
     parser.add_argument('-t', '--thread', type=int, default=10)
     parser.add_argument('--start', type=int)
     parser.add_argument('--end', type=int)
