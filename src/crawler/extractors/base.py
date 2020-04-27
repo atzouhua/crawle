@@ -65,7 +65,7 @@ class BaseCrawler:
             thread_num = 20
         result = self.execute(index_tasks, self._index_handler, thread_num=thread_num)
 
-        thread_num = min(n, Config.get('thread', self.thread_num))
+        thread_num = Config.get('thread', self.thread_num)
 
         n = len(result)
         self.logger.info('Get task done. tasks count: %s, threads: %s' % (n, thread_num))
