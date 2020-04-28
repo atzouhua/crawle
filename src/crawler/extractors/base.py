@@ -63,8 +63,11 @@ class BaseCrawler:
         thread_num = min(n, 5)
         if n > 100:
             thread_num = 20
-        result = self.execute(index_tasks, self._index_handler, thread_num=thread_num)
 
+        result = self.execute(index_tasks, self._index_handler, thread_num=thread_num)
+        self.after_index(result)
+
+    def after_index(self, result):
         thread_num = Config.get('thread', self.thread_num)
 
         n = len(result)

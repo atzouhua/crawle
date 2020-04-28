@@ -31,6 +31,7 @@ def app_main():
     parser.add_argument('crawler', nargs='?', default='sousi')
     parser.add_argument('action', nargs='?', default='')
     parser.add_argument('url', nargs='?', default='')
+    # parser.add_argument('url', nargs='?', default='https://www.mkzhan.com/49733/')
     parser.add_argument('-t', '--thread', type=int, default=10)
     parser.add_argument('--start', type=int)
     parser.add_argument('--end', type=int)
