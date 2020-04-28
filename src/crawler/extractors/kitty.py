@@ -23,7 +23,7 @@ class Kitty(BaseCrawler):
         information = []
         for element in elements.items():
             information.append('{}{}'.format(self.base_url, element.attr('href')))
-        data = self.execute(information, self.find_magnet, **kwargs)
+        data = self.execute(information, self.find_magnet, alias=kwargs.get('alias'))
 
         status = 2
         magnet_link = ''

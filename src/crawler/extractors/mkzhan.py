@@ -25,6 +25,7 @@ class MkZhan(BaseCrawler):
 
     def action_update(self, **kwargs):
         self.is_update = True
+        self.rule['page_rule'] = {'list': ".update-list.active .common-comic-item .comic__title a"}
         _url = format_url('/update', self.base_url)
         kwargs.setdefault('i', 1)
         kwargs.setdefault('n', 1)
@@ -53,7 +54,7 @@ class MkZhan(BaseCrawler):
 
         if len(book_items):
             if self.is_update:
-                book_items = book_items[-5:-1]
+                book_items = book_items[0:5]
 
             thread_num = 20 if len(book_items) > 100 else 10
             item_result = self.execute(book_items, self._book_item_handler, thread_num=thread_num)
