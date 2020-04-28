@@ -77,12 +77,13 @@ def get_download_link(doc):
     link_list = re.findall(r'[a-zA-z]+://[^\s]*', summary)
     if link_list and len(link_list) > 1:
         for link in link_list:
-            if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1:
+            if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1 or link.find(
+                    't00y') != -1:
                 return link
 
     content_elements = doc('#mbtxfont a')
     for element in content_elements.items():
         href = element.attr('href')
-        if href.find('400gb') != -1 or href.find('ctfile') != -1 or href.find('474b') != -1:
+        if href.find('400gb') != -1 or href.find('ctfile') != -1 or href.find('474b') != -1 or href.find('t00y') != -1:
             return href
     return ''
