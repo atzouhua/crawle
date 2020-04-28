@@ -3,6 +3,7 @@ from urllib import parse
 
 from crawler.common import r1, r2
 from .base import BaseCrawler
+from ..utils.config import Config
 
 
 class SouSi(BaseCrawler):
@@ -12,8 +13,8 @@ class SouSi(BaseCrawler):
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
             'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 1,
-            'start_page': 1,
+            'end_page': 1500,
+            'start_page': 1500,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
             'post_rule': {"title": ".single h1"},
             'base_url': self.base_url
@@ -42,7 +43,10 @@ class SouSi(BaseCrawler):
         if not params['download_link']:
             params['status'] = 0
 
-        self.db_publish(params, **kwargs)
+        if not Config.get('debug'):
+            self.db_publish(params, **kwargs)
+        else:
+            print(params)
 
     def get_default_params(self, doc, url):
         origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())
@@ -54,11 +58,13 @@ class SouSi(BaseCrawler):
         parse_result = parse.urlparse(url)
         alias = str(parse_result.path).replace('guochantaotu/', '').split('/')[1].lower()
         title = origin_title.replace(category, '')
+        pwd, down_link = get_download_link_pwd(doc)
         return {
             'title': title, 'alias': alias,
             'star': star.replace('匿名寫真', ''),
             'category': category,
-            'download_link': get_download_link(doc),
+            'download_link': down_link,
+            'pwd': pwd,
             'url': url,
             'status': 1
         }
@@ -71,19 +77,37 @@ class SouSi(BaseCrawler):
         return {'title': title}
 
 
-def get_download_link(doc):
-    # ignore_link_list = ['dbank', 'vdisk', 'guochantaotu', '115', 'vmall', 'rayfile']
+def get_download_link_pwd(doc):
     summary = doc('p.summary').text()
+    pwd = ''
+    if summary.find('资源无密码') != -1:
+        pwd = ''
+    elif summary.find('解压') != -1:
+        re_pwd = re.search(r'【解压密码】([^\s]*)', summary)
+        if re_pwd:
+            pwd = re_pwd.group(1).strip()
+        else:
+            print(summary)
+
     link_list = re.findall(r'[a-zA-z]+://[^\s]*', summary)
     if link_list and len(link_list):
-        for link in link_list:
-            if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1 or link.find(
-                    't00y') != -1:
-                return link
+        return pwd, _find_down_link(link_list)
 
-    content_elements = doc('#mbtxfont a')
-    for element in content_elements.items():
-        href = element.attr('href')
-        if href.find('400gb') != -1 or href.find('ctfile') != -1 or href.find('474b') != -1 or href.find('t00y') != -1:
-            return href
+    link_list = re.findall(r'[a-zA-z]+://[^\s]*', doc('#mbtxfont a').text())
+    if link_list and len(link_list):
+        return pwd, _find_down_link(link_list)
+
+    # content_elements = doc('#mbtxfont a')
+    # for element in content_elements.items():
+    #     href = element.attr('href')
+    #     if href.find('400gb') != -1 or href.find('ctfile') != -1 or href.find('474b') != -1 or href.find('t00y') != -1:
+    #         return href
+    return pwd, ''
+
+
+def _find_down_link(link_list):
+    for link in link_list:
+        if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1 or link.find(
+                't00y') != -1:
+            return link
     return ''
