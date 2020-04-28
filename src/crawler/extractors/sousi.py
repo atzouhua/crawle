@@ -75,7 +75,7 @@ def get_download_link(doc):
     # ignore_link_list = ['dbank', 'vdisk', 'guochantaotu', '115', 'vmall', 'rayfile']
     summary = doc('p.summary').text()
     link_list = re.findall(r'[a-zA-z]+://[^\s]*', summary)
-    if link_list and len(link_list) > 1:
+    if link_list and len(link_list):
         for link in link_list:
             if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1 or link.find(
                     't00y') != -1:
