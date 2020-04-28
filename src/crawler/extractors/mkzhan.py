@@ -54,7 +54,7 @@ class MkZhan(BaseCrawler):
 
         if len(book_items):
             if self.is_update:
-                book_items = book_items[0:5]
+                book_items = book_items[0:3]
 
             thread_num = 20 if len(book_items) > 100 else 10
             item_result = self.execute(book_items, self._book_item_handler, thread_num=thread_num)
