@@ -49,12 +49,12 @@ class T66y(BaseCrawler):
         i = 0
         while True:
             self.reply()
-            second = random.randint(1024, 1124)
-            self.logger.info('time wait: {}s'.format(second))
-            time.sleep(second)
             i += 1
             if i > n:
                 break
+            second = random.randint(1024, 1500)
+            self.logger.info('time wait: {}s\n'.format(second))
+            time.sleep(second)
 
     def reply(self, content='1024'):
         data = self.get_reply_post()

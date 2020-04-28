@@ -138,7 +138,7 @@ class BaseCrawler:
                         if result:
                             if type(result) == list:
                                 result_list.extend(result)
-                            elif type(result) == dict:
+                            elif type(result) == dict or type(result) == tuple:
                                 result_list.append(result)
                 except HttpException as he:
                     self.logger.exception(he)

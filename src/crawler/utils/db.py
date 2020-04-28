@@ -33,6 +33,11 @@ class DB:
         return cls.query_internal(sql, tuple(data.values()), 'lastrowid')
 
     @classmethod
+    def update(cls, table, data: dict, where: str):
+        sql = cls._format_update(table, data, where)
+        return cls.query_internal(sql, tuple(data.values()), 'rowcount')
+
+    @classmethod
     def insert_all(cls, table, data: list):
         sql = cls._format_insert(table, data[0], 'REPLACE')
         params = []
@@ -72,10 +77,18 @@ class DB:
         fields = ','.join(fields)
         return '{} INTO {} ({}) VALUES ({})'.format(t, table, fields, _value.strip(','))
 
+    @classmethod
+    def _format_update(cls, table, data: dict, where):
+        fields = []
+        for k, v in data.items():
+            fields.append("{} = %s".format(k))
+        fields = ','.join(fields)
+        return 'UPDATE {} SET {} WHERE {}'.format(table, fields, where)
+
 
 # res = DB.insert("insert into ii_mgstage (title, url) values ('test', 'test')")
 
 # res = DB.all('select * from ii_mgstage')
 # print(res)
 if __name__ == '__main__':
-    print(DB.insert_all('ii_mgstage', [{'alias': 99}, {'alis': 11}]))
+    print(DB.update('ii_mgstage', [{'alias': 99}, {'t': 11}], '1=1'))
