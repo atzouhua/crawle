@@ -174,7 +174,7 @@ class BaseCrawler:
 
     def save(self, params, **kwargs):
         if not Config.get('debug'):
-            self.db_publish(params, **kwargs)
+            self.db_publish(params, 'alias', **kwargs)
         else:
             print(params)
 
