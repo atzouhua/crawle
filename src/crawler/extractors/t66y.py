@@ -55,6 +55,7 @@ class T66y(BaseCrawler):
             second = random.randint(1024, 1500)
             self.logger.info('time wait: {}s\n'.format(second))
             time.sleep(second)
+        exit()
 
     def reply(self, content='1024'):
         data = self.get_reply_post()

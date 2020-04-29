@@ -172,9 +172,11 @@ class BaseCrawler:
         else:
             self.logger.info("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), message, status))
 
-    def publish(self, data):
-        res = self.http.html(self.publish_api, data)
-        return res
+    def save(self, params, **kwargs):
+        if not Config.get('debug'):
+            self.db_publish(params, **kwargs)
+        else:
+            print(params)
 
     def db_publish(self, params: dict, bar_field='title', **kwargs):
         self.processing(_bar=kwargs.get('bar'), message=params[bar_field], status='done', **kwargs)

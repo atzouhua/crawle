@@ -43,10 +43,7 @@ class SouSi(BaseCrawler):
         if not params['download_link']:
             params['status'] = 0
 
-        if not Config.get('debug'):
-            self.db_publish(params, **kwargs)
-        else:
-            print(params)
+        self.save(params, **kwargs)
 
     def get_default_params(self, doc, url):
         origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())

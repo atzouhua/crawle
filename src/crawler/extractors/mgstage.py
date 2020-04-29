@@ -22,7 +22,7 @@ class MgStage(BaseCrawler):
         self.table = 'mgstage'
         self.rule = {
             'page_list_url': '/search/search.php?search_word=&sort=new&list_cnt=120&disp_type=thumb&page=%page',
-            'end_page': 100,
+            'end_page': 1,
             'start_page': 1,
             'page_rule': {"list": "div.rank_list li h5 a"},
             'post_rule': {"title": "h1.tag"},
@@ -57,7 +57,7 @@ class MgStage(BaseCrawler):
             self.processing(kwargs.get('bar'), message=params['alias'], status='fail', **kwargs)
             return
 
-        self.db_publish(params, bar_field='alias', **kwargs)
+        self.save(params, **kwargs)
 
     def _get_makes(self):
         html = self.http.html('https://www.mgstage.com/ppv/makers.php')
