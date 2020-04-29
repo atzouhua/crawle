@@ -49,10 +49,11 @@ class T66y(BaseCrawler):
         self.logger.info('post count: {}s'.format(n))
         i = 0
         while True:
-            self.reply()
             i += 1
             if i > n:
                 break
+
+            self.reply()
             second = random.randint(1024, 1500)
             self.logger.info('time wait: {}s\n'.format(second))
             time.sleep(second)
