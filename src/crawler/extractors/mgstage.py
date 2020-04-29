@@ -22,7 +22,7 @@ class MgStage(BaseCrawler):
         self.table = 'mgstage'
         self.rule = {
             'page_list_url': '/search/search.php?search_word=&sort=new&list_cnt=120&disp_type=thumb&page=%page',
-            'end_page': 1,
+            'end_page': 100,
             'start_page': 1,
             'page_rule': {"list": "div.rank_list li h5 a"},
             'post_rule': {"title": "h1.tag"},
@@ -38,9 +38,11 @@ class MgStage(BaseCrawler):
         doc = data.get('doc')
         star, tag = _get_star_tag(doc)
         images = _get_images(doc)
-
+        publish_time = r1(r'(\d{4}/\d{1,2}/\d{1,2})', doc.html())
+        if publish_time:
+            publish_time = publish_time.replace('/', '-')
         params = {
-            'publish_time': r1(r'(\d{4}/\d{1,2}/\d{1,2})', doc.html()).replace('/', '-'),
+            'publish_time': publish_time,
             'alias': task.strip('/').split('/')[-1],
             'thumbnail': doc('#EnlargeImage').attr('href'),
             'images': json.dumps(images),
