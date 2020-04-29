@@ -35,7 +35,7 @@ def app_main():
     parser.add_argument('--start', type=int)
     parser.add_argument('--end', type=int)
     parser.add_argument('--cid', type=int)
-    parser.add_argument('--debug', action='store_true', default=True)
+    parser.add_argument('--debug', action='store_true', default=False)
     parser.add_argument('--disable-bar', action='store_true')
 
     parsed_args = parser.parse_args()
