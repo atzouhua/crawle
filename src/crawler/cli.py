@@ -28,7 +28,7 @@ def script_main():
 
 def app_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('crawler', nargs='?', default='kitty')
+    parser.add_argument('crawler', nargs='?', default='acqq')
     parser.add_argument('action', nargs='?', default='')
     parser.add_argument('url', nargs='?', default='')
     parser.add_argument('-t', '--thread', type=int, default=10)

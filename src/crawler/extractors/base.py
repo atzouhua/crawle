@@ -113,7 +113,10 @@ class BaseCrawler:
         html = self.http.html(task)
         doc = pyquery.PyQuery(html)
         for field, rule in self.post_rule.items():
-            kwargs[field] = doc(rule).text()
+            if field == 'thumbnail':
+                kwargs[field] = doc(rule).attr('src')
+            else:
+                kwargs[field] = doc(rule).text()
         kwargs.setdefault('doc', doc)
         return kwargs
 
