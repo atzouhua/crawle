@@ -54,7 +54,7 @@ class Kitty(BaseCrawler):
         return None
 
     def get_task(self):
-        sql = 'select id, `alias`, publish_time from ii_mgstage where status = 0 order by id desc limit 3'
+        sql = 'select id, `alias`, publish_time from ii_mgstage where status = 0 order by id desc limit 30'
         data = DB.all(sql)
         task_list = []
         for item in data:
