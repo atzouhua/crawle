@@ -11,10 +11,12 @@ class Kitty(BaseCrawler):
         super().__init__()
         self.base_url = 'https://www.torrentkitty.vip'
         self.proxies = SS_PROXIES
+        self.thread_num = 20
 
     def run(self):
         data = self.get_task()
         self.execute(data, self.parse_magnet)
+        # self.parse_magnet('https://torrentkitty.vip/search/355OPCYN-074/', alias='355OPCYN-074')
 
     def parse_magnet(self, task, **kwargs):
         html = self.http.html(task)
@@ -28,13 +30,12 @@ class Kitty(BaseCrawler):
         status = 2
         magnet_link = ''
         if data:
-            data.sort(key=lambda k: k[0])
+            data.sort(key=lambda k: k[3])
+            # data.sort(key=lambda k: (k[0], k[3]), reverse=False)
             kwargs['url'] = data[0][2]
             kwargs.setdefault('magnet_link', data[0][1])
             status = 1
             magnet_link = data[0][1]
-
-        print('{} {}'.format(kwargs.get('alias'), magnet_link))
         DB.update('ii_mgstage', {'status': status, 'magnet_link': magnet_link}, 'id = {}'.format(kwargs['id']))
         return kwargs
 
@@ -49,11 +50,11 @@ class Kitty(BaseCrawler):
             if not _name:
                 continue
             if _name.find(alias) != -1 and _name.find('jpg') == -1:
-                return n, doc('.magnet-link').text(), task
+                return n, doc('.magnet-link').text(), task, element('td.size').text()
         return None
 
     def get_task(self):
-        sql = 'select id, `alias`, publish_time from ii_mgstage where status = 0 order by publish_time desc limit 30'
+        sql = 'select id, `alias`, publish_time from ii_mgstage where status = 0 order by id desc limit 3'
         data = DB.all(sql)
         task_list = []
         for item in data:

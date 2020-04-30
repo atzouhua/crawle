@@ -8,8 +8,6 @@ class Colab(BaseCrawler):
         super().__init__()
 
     def run(self):
-        params = {"save_path": "/content/drive/My Drive/Torrent"}
-        downloads = []
         sql = 'select magnet_link from ii_mgstage where status = 1 order by publish_time desc limit 8'
         data = DB.all(sql)
         for item in data:
