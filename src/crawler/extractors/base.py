@@ -172,9 +172,9 @@ class BaseCrawler:
         else:
             self.logger.info("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), message, status))
 
-    def save(self, params, **kwargs):
+    def save(self, params, field='title', **kwargs):
         if not Config.get('debug'):
-            self.db_publish(params, 'alias', **kwargs)
+            self.db_publish(params, field, **kwargs)
         else:
             print(params)
 

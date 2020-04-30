@@ -57,7 +57,7 @@ class MgStage(BaseCrawler):
             self.processing(kwargs.get('bar'), message=params['alias'], status='fail', **kwargs)
             return
 
-        self.save(params, **kwargs)
+        self.save(params, 'alias', **kwargs)
 
     def _get_makes(self):
         html = self.http.html('https://www.mgstage.com/ppv/makers.php')

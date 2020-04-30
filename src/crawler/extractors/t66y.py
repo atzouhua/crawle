@@ -46,7 +46,7 @@ class T66y(BaseCrawler):
             return
 
         n = random.randint(6, 11)
-        self.logger.info('post count: {}s'.format(n))
+        self.logger.info('post count: {}'.format(n))
         i = 0
         while True:
             i += 1
