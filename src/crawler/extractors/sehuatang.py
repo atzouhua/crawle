@@ -16,8 +16,8 @@ class SeHuaTang(BaseCrawler):
         self.is_update = False
         self.rule = {
             'page_list_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
-            'end_page': 1,
-            'start_page': 1,
+            'end_page': 85,
+            'start_page': 85,
             'base_url': self.base_url
         }
         self.proxies = SS_PROXIES
@@ -50,6 +50,9 @@ class SeHuaTang(BaseCrawler):
         title = kwargs.get('title', doc('#thread_subject').text())
         magnet_link = element.text()
         alias = r1(r'([a-zA-z0-9-]+-[0-9]+)', title)
+        if not alias:
+            return
+
         thumbnail = ''
         star = images = []
         if alias:
@@ -57,9 +60,11 @@ class SeHuaTang(BaseCrawler):
             if len(images) > 10:
                 images = images[0:10]
 
-        params = {'alias': alias, 'thumbnail': thumbnail, 'images': json.dumps(images), 'url': task, 'title': title,
+        params = {'alias': alias.upper(), 'thumbnail': thumbnail, 'images': json.dumps(images), 'url': task,
+                  'title': title,
                   'star': json.dumps(star), 'magnet_link': magnet_link
                   }
+        # print(title, alias)
         self.save(params, 'alias', **kwargs)
 
     def _get_image(self, alias):
