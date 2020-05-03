@@ -50,7 +50,7 @@ class SeHuaTang(BaseCrawler):
         title = kwargs.get('title', doc('#thread_subject').text())
         magnet_link = element.text()
         alias = r1(r'([a-zA-z0-9-]+-[0-9]+)', title)
-        if not alias:
+        if not alias or not magnet_link:
             return
 
         thumbnail = ''
