@@ -64,7 +64,7 @@ class SeHuaTang(BaseCrawler):
 
     def _get_image(self, alias):
         try:
-            html = self.http.html('https://www.javbus.com/{}'.format(alias))
+            html = self.http.html('https://www.busdmm.one/{}'.format(alias))
             doc = pyquery.PyQuery(html)
             thumbnail = doc('.bigImage').attr('href')
             elements = doc('#sample-waterfall a')
