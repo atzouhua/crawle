@@ -49,7 +49,7 @@ class SeHuaTang(BaseCrawler):
         element = doc('.blockcode li')
         title = kwargs.get('title', doc('#thread_subject').text())
         magnet_link = element.text()
-        alias = r1(r'([a-zA-z]+-[0-9]+)', title)
+        alias = r1(r'([a-zA-z0-9]+-[0-9]+)', title)
         thumbnail = ''
         star = images = []
         if alias:
