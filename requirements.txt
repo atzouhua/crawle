@@ -2,4 +2,3 @@ requests~=2.21.0
 pyquery~=1.4.0
 progress~=1.5
 pymysql~=0.9.3
-google-colab

@@ -13,9 +13,13 @@ ip = s.getsockname()[0]
 s.close()
 
 if ip.find('10.3.19') != -1 or ip.find('192.168') != -1 or ip.find('10.0.2') != -1:
+    # SS_PROXIES = {
+    #     'http': 'socks5://127.0.0.1:1080',
+    #     'https': 'socks5://127.0.0.1:1080',
+    # }
     SS_PROXIES = {
-        'http': 'socks5://127.0.0.1:1080',
-        'https': 'socks5://127.0.0.1:1080',
+        'http': 'http://127.0.0.1:1087',
+        'https': 'http://127.0.0.1:1087',
     }
 else:
     SS_PROXIES = None
@@ -53,6 +57,8 @@ def get_tasks(rule: dict):
         page_url = rule.get('page_list_url')
         for i in range(start_page, end_page + 1):
             url = page_url.replace('%page', str(i))
+            if url.find('%cid') != -1:
+                url = url.replace('%cid', str(Config.get('cid')))
             tasks.append(format_url(url, base_url))
 
     tasks.reverse()

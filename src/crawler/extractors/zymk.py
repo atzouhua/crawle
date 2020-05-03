@@ -3,14 +3,14 @@ import re
 
 import pyquery
 
-from src.crawler.extractors import BaseProvider
-from crawler.common import format_url
+from ..common import format_url
+from .base import BaseCrawler
 
 
-class Zymk(BaseProvider):
+class Zymk(BaseCrawler):
 
     def __init__(self):
-        BaseProvider.__init__(self)
+        super(Zymk, self).__init__()
         self.base_url = 'https://www.zymk.cn'
         self.publish_api = 'http://hahamh.me:8080/api/banner'
         self.update_url = '/update'

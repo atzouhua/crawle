@@ -1,4 +1,3 @@
-import inspect
 import threading
 import time
 import unicodedata
@@ -10,8 +9,7 @@ from progress.bar import Bar
 from ..common import format_url, get_progress_bar, get_tasks
 from ..utils.config import Config
 from ..utils.db import DB
-from ..utils.exceptions import HttpException
-from ..utils.http import HttpClient
+from ..utils.http_client import HttpClient
 from ..utils.log import Logging
 
 
@@ -143,8 +141,6 @@ class BaseCrawler:
                                 result_list.extend(result)
                             elif type(result) == dict or type(result) == tuple:
                                 result_list.append(result)
-                except HttpException as he:
-                    self.logger.exception(he)
                 except Exception as e:
                     self.logger.exception(e)
         return result_list

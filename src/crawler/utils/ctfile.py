@@ -1,4 +1,5 @@
 import json
+import random
 import re
 import time
 from urllib.parse import urlparse
@@ -9,41 +10,42 @@ import requests
 class CtFile:
 
     def __init__(self):
-        self.base_url = 'https://ctfile.com/'
+        self.base_url = 'https://474b.com'
         self.request = requests.session()
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'
         }
+        self.download_api = 'https://webapi.ctfile.com/get_file_url.php?uid={}&fid={}&folder_id=0&file_chk={}&mb=0&app=0&acheck=1&verifycode=&rd={}'
 
     def download(self, url):
+        url = 'http://www.400gb.com/file/80638823'
+        url = url.replace('http:', 'https:')
         print('[+]: start downloading... %s' % url)
-        url_info = urlparse(url)
-        self.base_url = '{}://{}'.format(url_info.scheme, url_info.netloc)
+        response = self.fetch(url, allow_redirects=False)
+        if response.status_code == 302:
+            url = response.headers['location']
+        file_id = url.split('/')[-1]
         self.headers['Referer'] = url
+        self.headers['Origin'] = 'https://545c.com'
+        api = 'https://webapi.ctfile.com/getfile.php?f={}&passcode=&r={}&ref='.format(file_id, random.random())
+        response = self.fetch(api)
+        data = json.loads(response.text)
+        title = data['file_name']
 
-        res = self.fetch(url)
-        html = res.text
-        try:
-            title = re.search("<h3>([^<]*)<small>", html).group(1)
-            uid = re.search("var userid = '(\d+)';", html).group(1)
-            free_down = eval(re.search("free_down([^\"]*)", html).group(1))
-            down_link = '%s/get_file_url.php?uid=%s&fid=%s&folder_id=0&file_chk=%s&mb=0&app=0&verifycode=&rd=%s' % (
-                self.base_url, uid, free_down[0], free_down[2], '0.9708306371234965')
-            return self._start_download(down_link, title)
-        except Exception as e:
-            print(e)
-            return False
+        download_api = self.download_api.format(data['userid'], data['file_id'], data['file_chk'], random.random())
+        response = self.fetch(download_api)
+        data = json.loads(response.text)
+        wget_cmd = "wget -O %s '%s'" % (title, data['downurl'])
+        print(wget_cmd)
 
-    def _start_download(self, down_link, title):
-        self.headers['X-Requested-With'] = 'XMLHttpRequest'
-        res = self.fetch(down_link, allow_redirects=False)
-        data = json.loads(res.text)
-        print(data)
-
-        # wget_cmd = "wget -O %s '%s'" % (title, data['downurl'] + '&mtd=1')
-        # print(wget_cmd)
-
-        return True
+        data = {
+            'append': 'list-home',
+            'paged': 1000,
+            'action': 'ajax_load_posts',
+            'page': 'home'
+        }
+        response = self.fetch('https://www.vmgirls.com/wp-admin/admin-ajax.php', data=data)
+        print(response.text)
 
     def fetch(self, url, data=None, **kwargs):
         response = None
@@ -69,4 +71,4 @@ class CtFile:
 
 if __name__ == '__main__':
     obj = CtFile()
-    obj.download('https://sosi88.ctfile.com/fs/1801582-390307701')
+    obj.download('https://474b.com/file/1801582-440521095')

@@ -81,26 +81,25 @@ class AcQQ(BaseCrawler):
         if r:
             item_name = '第%s话' % int(item_name)
 
-        images = self.parser_book_image(html)
+        images = parser_book_image(html)
         return {'name': item_name, 'images': images}
 
 
-    def parser_book_image(self, html):
-        chapter_json_str_pattern = re.compile('("chapter":{.*)')
-        bs64_data = re.search(r"\sDATA\s*=\s*'([^']{32,})'", html).group(1)
-        for i in range(len(bs64_data)):
-            try:
-                json_str_part = base64.b64decode(bs64_data[i:]).decode('utf-8')
-                break
-            except Exception:
-                pass
-        else:
-            return None
+def parser_book_image(html):
+    chapter_json_str_pattern = re.compile('("chapter":{.*)')
+    bs64_data = re.search(r"\sDATA\s*=\s*'([^']{32,})'", html).group(1)
+    for i in range(len(bs64_data)):
+        try:
+            json_str_part = base64.b64decode(bs64_data[i:]).decode('utf-8')
+            break
+        except Exception:
+            pass
+    else:
+        return None
 
-        json_str = "{" + chapter_json_str_pattern.search(json_str_part).group(1)
-        res = json.loads(json_str)
-        images = []
-        for i in res.get('picture'):
-            images.append(i.get('url'))
-        return images
-
+    json_str = "{" + chapter_json_str_pattern.search(json_str_part).group(1)
+    res = json.loads(json_str)
+    images = []
+    for i in res.get('picture'):
+        images.append(i.get('url'))
+    return images

@@ -2,7 +2,6 @@ import time
 
 import requests
 
-from .exceptions import HttpException
 from .log import Logging
 from .ua import FakerUa
 
@@ -43,7 +42,7 @@ class HttpClient:
                 if response.ok:
                     return response
 
-                self.error = response.status_code
+                self.error = response.status_code, response.text
             except Exception as e:
                 time.sleep(1)
                 self.error = e
@@ -51,7 +50,7 @@ class HttpClient:
                 continue
 
         if not response:
-            raise HttpException(self.error, url)
+            raise Exception(self.error, url)
 
         return response
 

@@ -2,6 +2,7 @@ from .base import BaseCrawler
 from ..utils.db import DB
 
 
+# nohup rclone mount caoyufei_edu:/ /data/drive --allow-other --allow-non-empty --vfs-cache-mode writes >/dev/null 2>&1 &
 class Colab(BaseCrawler):
 
     def __init__(self):
