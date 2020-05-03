@@ -16,8 +16,8 @@ class SeHuaTang(BaseCrawler):
         self.is_update = False
         self.rule = {
             'page_list_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
-            'end_page': 85,
-            'start_page': 85,
+            'end_page': 1,
+            'start_page': 1,
             'base_url': self.base_url
         }
         self.proxies = SS_PROXIES
