@@ -77,7 +77,7 @@ class SeHuaTang(BaseCrawler):
                 star_list.append(element.text())
             return thumbnail, images, star_list
         except Exception as e:
-            html = self.http.html('https://www.jav321.com/search', {'sn': alias})
+            html = self.http.html('http://www.jav321.com/search', {'sn': alias})
             doc = pyquery.PyQuery(html)
             elements = doc('.row .col-md-3 .col-xs-12 a img')
             images = []
