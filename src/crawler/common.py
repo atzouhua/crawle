@@ -18,8 +18,8 @@ if ip.find('10.3.19') != -1 or ip.find('192.168') != -1 or ip.find('10.0.2') != 
     #     'https': 'socks5://127.0.0.1:1080',
     # }
     SS_PROXIES = {
-        'http': 'http://127.0.0.1:1087',
-        'https': 'http://127.0.0.1:1087',
+        'http': 'http://127.0.0.1:1081',
+        'https': 'http://127.0.0.1:1081',
     }
 else:
     SS_PROXIES = None
@@ -72,13 +72,6 @@ def get_progress_bar(_max) -> Bar:
     return Bar('Processing', max=_max, suffix=suffix,
                bar_prefix=bar_prefix,
                bar_suffix=bar_suffix)
-
-
-def get_book_item_name(item_name, exclude_list=None):
-    r = re.search('^[0-9]*$', item_name)
-    if r:
-        item_name = '第%s话' % int(item_name)
-    return item_name
 
 
 def r1(pattern, text, group=1, default=None):

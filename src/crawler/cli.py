@@ -34,7 +34,7 @@ def app_main():
     parser.add_argument('-t', '--thread', type=int, default=10)
     parser.add_argument('--start', type=int)
     parser.add_argument('--end', type=int)
-    parser.add_argument('--cid', type=int, default=104)
+    parser.add_argument('--cid', type=int, default=2)
     parser.add_argument('--debug', action='store_true', default=False)
     parser.add_argument('--disable-bar', action='store_true')
 

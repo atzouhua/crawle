@@ -1,11 +1,10 @@
-import base64
 import json
-import re
 
 import pyquery
 
 from .base import BaseCrawler
 from ..common import format_url, r1, SS_PROXIES
+from ..utils.config import Config
 
 
 class SeHuaTang(BaseCrawler):
@@ -18,7 +17,8 @@ class SeHuaTang(BaseCrawler):
             'page_list_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
             'end_page': 1,
             'start_page': 1,
-            'base_url': self.base_url
+            'base_url': self.base_url,
+            'post_rule': {'title': '#thread_subject', 'magnet_link': '.blockcode li'},
         }
         self.proxies = SS_PROXIES
         self.table = 'sehuatang'
@@ -44,14 +44,11 @@ class SeHuaTang(BaseCrawler):
         return result
 
     def _post_handler(self, task, **kwargs):
-        html = self.http.html(task)
-        doc = pyquery.PyQuery(html)
-        element = doc('.blockcode li')
-        title = kwargs.get('title', doc('#thread_subject').text())
-        magnet_link = element.text()
-        alias = r1(r'([a-zA-z0-9-]+-[0-9]+)', title)
-        if not alias or not magnet_link:
-            return
+        data = super(SeHuaTang, self)._post_handler(task, **kwargs)
+        title = data['title']
+        magnet_link = data['magnet_link']
+        alias = r1(r'([a-zA-z0-9-]+-[0-9]+)', title, 1, '')
+        cid = int(Config.get('cid'))
 
         thumbnail = ''
         star = images = []
@@ -60,12 +57,21 @@ class SeHuaTang(BaseCrawler):
             if len(images) > 10:
                 images = images[0:10]
 
-        params = {'alias': alias.upper(), 'thumbnail': thumbnail, 'images': json.dumps(images), 'url': task,
+        params = {'alias': alias, 'thumbnail': thumbnail, 'images': json.dumps(images), 'url': task,
                   'title': title,
-                  'star': json.dumps(star), 'magnet_link': magnet_link
-                  }
-        # print(title, alias)
-        self.save(params, 'alias', **kwargs)
+                  'star': json.dumps(star), 'magnet_link': magnet_link, 'status': 1}
+        if not magnet_link:
+            return None
+
+        if cid != 2:
+            if not alias:
+                return None
+            params['alias'] = params['alias'].upper()
+            # print(title, alias)
+            self.save(params, 'alias', **kwargs)
+        else:
+            params['status'] = 2
+            self.save(params, 'title', **kwargs)
 
     def _get_image(self, alias):
         try:
