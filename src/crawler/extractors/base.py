@@ -1,3 +1,4 @@
+import platform
 import threading
 import time
 import unicodedata
@@ -149,37 +150,36 @@ class BaseCrawler:
         self.logger.info("%s seconds process time" % (time.time() - self.begin_tme))
 
     def processing(self, _bar: Bar, message: str, status, **kwargs):
-        if not Config.get('disable_bar'):
-            with self.lock:
-                if _bar:
-                    n = 0
-                    message = message.strip()
-                    for i in message:
-                        if unicodedata.east_asian_width(i) in ('F', 'W'):
-                            n += 2
-                        else:
-                            n += 1
+        with self.lock:
+            if _bar:
+                n = 0
+                message = message.strip()
+                for i in message:
+                    if unicodedata.east_asian_width(i) in ('F', 'W'):
+                        n += 2
+                    else:
+                        n += 1
 
-                    b = 48 - n
-                    c = ' ' * b
-                    d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
-                    message = '[+]: %s%s[\033[%s]' % (message, c, d.format(status))
-                    _bar.writeln(message)
-                    _bar.finish()
-                if self.bar:
-                    self.bar.next()
-        else:
-            self.logger.info("[{}/{}]:{}\t{}".format(kwargs.get('i'), kwargs.get('n'), message, status))
+                b = 48 - n
+                c = ' ' * b
+                d = '[\033[32m{}\033[0m' if status == 'done' else '\033[31m{}\033[0m'
+                message = '[+]: %s%s[\033[%s]' % (message, c, d.format(status))
+                _bar.writeln(message)
+                _bar.finish()
+            if self.bar:
+                self.bar.next()
 
     def save(self, params, field='title', **kwargs):
-        if not Config.get('debug'):
-            self.db_publish(params, field, **kwargs)
+        message = params[field]
+        if platform.system() == 'Windows':
+            print("[{}/{}]:{}".format(kwargs.get('i'), kwargs.get('n'), message))
         else:
-            print(params)
+            self.processing(_bar=kwargs.get('bar'), message=message, status='done', **kwargs)
 
-    def db_publish(self, params: dict, bar_field='title', **kwargs):
-        self.processing(_bar=kwargs.get('bar'), message=params[bar_field], status='done', **kwargs)
+        if not Config.get('debug'):
+            self._db_publish(params)
 
+    def _db_publish(self, params: dict):
         self.data.append(params)
         if len(self.data) >= 50:
             DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)

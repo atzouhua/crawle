@@ -46,7 +46,7 @@ def get_tasks(rule: dict):
         tasks.append(format_url(page_url, base_url))
     else:
         if rule.get('append_page_list_url'):
-            tasks.append(rule.get('append_page_list_url'))
+            tasks.append(format_url(rule.get('append_page_list_url'), base_url))
 
         start_page = Config.get('start', rule.get('start_page', 1))
         end_page = Config.get('end', rule.get('end_page', 1))

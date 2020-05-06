@@ -11,8 +11,8 @@ class SouSi(BaseCrawler):
         super().__init__()
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
-            'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 2,
+            'page_list_url': '/guochantaotu/rosi/list_112_%page.html',
+            'end_page': 1,
             'start_page': 1,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
             'post_rule': {"title": ".single h1"},
@@ -20,6 +20,7 @@ class SouSi(BaseCrawler):
         }
         self.charset = 'gbk'
         self.table = 'sousi'
+        self.thread_num = 50
 
     def _post_handler(self, task, **kwargs):
         data = super()._post_handler(task, **kwargs)
@@ -37,6 +38,9 @@ class SouSi(BaseCrawler):
         action = 'get_{}_params'.format(action)
         if hasattr(self, action):
             after_params = getattr(self, action)(params)
+            if not after_params:
+                self.logger.error('{}\t{}'.format(params['title'], task))
+                return
             params.update(after_params)
 
         if not params['download_link']:
@@ -67,16 +71,18 @@ class SouSi(BaseCrawler):
 
     def get_rosi_params(self, params: dict):
         title = params['title']
-        number = r1(r'(Vol|NO)\.\d+', title, 0)
-        if number:
-            title = '{} {}'.format(params['category'], number)
-        return {'title': title}
+        r = re.search(r'([a-zA-Z0]+)\.(\d+)', title)
+        if r:
+            title = '{} {}'.format(params['category'], r.group(0))
+            number = int(r.group(2))
+            return {'title': title, 'number': number}
+        return None
 
 
 def get_download_link_pwd(doc):
     summary = doc('p.summary').text()
     pwd = ''
-    if summary.find('资源无密码') != -1:
+    if summary.find('资源无') != -1:
         pwd = ''
     elif summary.find('解压') != -1:
         re_pwd = re.search(r'【解压密码】([^\s]*)', summary)
