@@ -27,14 +27,12 @@ class TaoTu(BaseCrawler):
         doc = pyquery.PyQuery(html)
         title = doc('.breadnav a').eq(-1).text()
         download_link, pwd = self.get_download_link(doc)
+        number = ''
 
         r = re.search(r'([a-zA-Z]+)\.(\d+)', title)
-        if not r:
-            self._fail(title, **kwargs)
-            return
-
-        number = r.group(2)
-        title = 'ROSI NO.{}'.format(number)
+        if r:
+            number = r.group(2)
+            title = 'ROSI NO.{}'.format(number)
         status = 1 if download_link else 0
 
         params = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task, 'id': int(number),
