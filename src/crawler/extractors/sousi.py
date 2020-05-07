@@ -76,7 +76,7 @@ class SouSi(BaseCrawler):
             title = '{} {}'.format(params['category'], r.group(0))
             number = r.group(2)
             return {'title': title, 'number': number, 'id': int(number)}
-        return {'title': title}
+        return {'title': title, 'number': '', 'id': 'NULL'}
 
 
 def get_download_link_pwd(doc):
