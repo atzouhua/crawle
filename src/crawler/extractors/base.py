@@ -149,7 +149,7 @@ class BaseCrawler:
     def process_time(self):
         self.logger.info("%s seconds process time" % (time.time() - self.begin_tme))
 
-    def processing(self, _bar: Bar, message: str, status, **kwargs):
+    def processing(self, _bar: Bar, message: str, status):
         with self.lock:
             if _bar:
                 n = 0
@@ -174,10 +174,16 @@ class BaseCrawler:
         if platform.system() == 'Windows':
             print("[{}/{}]:{}".format(kwargs.get('i'), kwargs.get('n'), message))
         else:
-            self.processing(_bar=kwargs.get('bar'), message=message, status='done', **kwargs)
+            self.processing(_bar=kwargs.get('bar'), message=message, status='done')
 
         if not Config.get('debug'):
             self._db_publish(params)
+
+    def fail(self, message, **kwargs):
+        if platform.system() == 'Windows':
+            print("[{}/{}]:{}".format(kwargs.get('i'), kwargs.get('n'), message))
+            return
+        self.processing(_bar=kwargs.get('bar'), message=message, status='fail')
 
     def _db_publish(self, params: dict):
         self.data.append(params)

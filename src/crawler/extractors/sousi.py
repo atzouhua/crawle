@@ -27,26 +27,19 @@ class SouSi(BaseCrawler):
         doc = data.get('doc')
 
         params = self.get_default_params(doc, data['url'])
-        if not params['alias'] or params['alias'].isdigit():
-            self.logger.error('not found alias. {}, {}'.format(params['title'], task))
-            return
+        if not params['download_link'] or not params['alias'] or params['alias'].isdigit():
+            self.fail(params['title'], **kwargs)
+        else:
+            action = params['alias']
+            if r1('(VOL|NO)', params['title']):
+                action = 'rosi'
 
-        action = params['alias']
-        if r1('(VOL|NO)', params['title']):
-            action = 'rosi'
+            action = 'get_{}_params'.format(action)
+            if hasattr(self, action):
+                after_params = getattr(self, action)(params)
+                params.update(after_params)
 
-        action = 'get_{}_params'.format(action)
-        if hasattr(self, action):
-            after_params = getattr(self, action)(params)
-            if not after_params:
-                self.logger.error('{}\t{}'.format(params['title'], task))
-                return
-            params.update(after_params)
-
-        if not params['download_link']:
-            params['status'] = 0
-
-        self.save(params, **kwargs)
+            self.save(params, **kwargs)
 
     def get_default_params(self, doc, url):
         origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())
@@ -72,11 +65,11 @@ class SouSi(BaseCrawler):
     def get_rosi_params(self, params: dict):
         title = params['title']
         r = re.search(r'([a-zA-Z0]+)\.(\d+)', title)
+        number = ''
         if r:
             title = '{} {}'.format(params['category'], r.group(0))
             number = r.group(2)
-            return {'title': title, 'number': number, 'id': int(number)}
-        return {'title': title, 'number': '', 'id': 'NULL'}
+        return {'title': title, 'number': number}
 
 
 def get_download_link_pwd(doc):
