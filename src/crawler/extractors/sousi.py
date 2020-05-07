@@ -60,7 +60,8 @@ class SouSi(BaseCrawler):
             'download_link': down_link,
             'pwd': pwd,
             'url': url,
-            'status': status
+            'status': status,
+            'number': ''
         }
 
     def get_rosi_params(self, params: dict):

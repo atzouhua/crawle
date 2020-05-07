@@ -187,11 +187,8 @@ class BaseCrawler:
 
     def _db_publish(self, params: dict):
         self.data.append(params)
-        if len(self.data) >= 20:
-            try:
-                DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)
-            except Exception as e:
-                self.logger.exception(e)
+        if len(self.data) >= 5:
+            DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)
             self.data = []
 
     @property
