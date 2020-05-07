@@ -14,7 +14,7 @@ class TaoTu(BaseCrawler):
         self.table = 'taotu'
         self.rule = {
             # 'append_page_list_url': '/gq/',
-            'page_list_url': 'index_%page.html',
+            'page_list_url': '/gc/index_%page.html',
             'end_page': 2,
             'start_page': 2,
             'page_rule': {'list': '.piclist li a'},
