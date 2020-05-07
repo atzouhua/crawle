@@ -74,9 +74,9 @@ class SouSi(BaseCrawler):
         r = re.search(r'([a-zA-Z0]+)\.(\d+)', title)
         if r:
             title = '{} {}'.format(params['category'], r.group(0))
-            number = int(r.group(2))
-            return {'title': title, 'number': number}
-        return None
+            number = r.group(2)
+            return {'title': title, 'number': number, 'id': int(number)}
+        return {'title': title}
 
 
 def get_download_link_pwd(doc):

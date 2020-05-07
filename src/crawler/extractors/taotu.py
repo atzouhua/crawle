@@ -16,7 +16,7 @@ class TaoTu(BaseCrawler):
             'append_page_list_url': '/gc/rosimm/',
             'page_list_url': 'gc/rosimm/index_%page.html',
             'end_page': 104,
-            'start_page': 104,
+            'start_page': 1,
             'page_rule': {'list': '.piclist li a'},
             'base_url': self.base_url
         }
@@ -29,7 +29,7 @@ class TaoTu(BaseCrawler):
         download_link, pwd = self.get_download_link(doc)
 
         r = re.search(r'([a-zA-Z]+)\.(\d+)', title)
-        if not r or not download_link:
+        if not r:
             self.logger.error('{}\t{}'.format(title, task))
             return
 
@@ -39,8 +39,8 @@ class TaoTu(BaseCrawler):
 
         params = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task, 'id': int(number),
                   'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
-        print(params)
-        # self.save(params, **kwargs)
+        # print(params)
+        self.save(params, **kwargs)
 
     def get_download_link(self, doc):
         elements = doc('.pictext a')
