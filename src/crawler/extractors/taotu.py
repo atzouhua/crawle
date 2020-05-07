@@ -35,7 +35,7 @@ class TaoTu(BaseCrawler):
             title = 'ROSI NO.{}'.format(number)
         status = 1 if download_link else 0
 
-        params = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task, 'id': int(number),
+        params = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
                   'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
         # print(params)
         self.save(params, **kwargs)
