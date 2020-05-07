@@ -11,7 +11,7 @@ class SouSi(BaseCrawler):
         super().__init__()
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
-            'page_list_url': '/guochantaotu/rosi/list_112_%page.html',
+            'page_list_url': '/guochantaotu/list_22_%page.html',
             'end_page': 1,
             'start_page': 1,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
