@@ -28,18 +28,18 @@ class SouSi(BaseCrawler):
 
         params = self.get_default_params(doc, data['url'])
         if not params['alias'] or params['alias'].isdigit():
-            self.fail(params['title'], **kwargs)
-        else:
-            action = params['alias']
-            if r1('(VOL|NO)', params['title']):
-                action = 'rosi'
+            self._fail(params['title'], **kwargs)
+            return
+        action = params['alias']
+        if r1('(VOL|NO)', params['title']):
+            action = 'rosi'
 
-            action = 'get_{}_params'.format(action)
-            if hasattr(self, action):
-                after_params = getattr(self, action)(params)
-                params.update(after_params)
+        action = 'get_{}_params'.format(action)
+        if hasattr(self, action):
+            after_params = getattr(self, action)(params)
+            params.update(after_params)
 
-            self.save(params, **kwargs)
+        self.save(params, **kwargs)
 
     def get_default_params(self, doc, url):
         origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())

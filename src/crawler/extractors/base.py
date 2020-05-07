@@ -179,7 +179,7 @@ class BaseCrawler:
         if not Config.get('debug'):
             self._db_publish(params)
 
-    def fail(self, message, **kwargs):
+    def _fail(self, message, **kwargs):
         if platform.system() == 'Windows':
             print("[{}/{}]:{}".format(kwargs.get('i'), kwargs.get('n'), message))
             return
@@ -187,7 +187,7 @@ class BaseCrawler:
 
     def _db_publish(self, params: dict):
         self.data.append(params)
-        if len(self.data) >= 5:
+        if len(self.data) >= 50:
             DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)
             self.data = []
 

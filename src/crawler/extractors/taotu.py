@@ -13,7 +13,7 @@ class TaoTu(BaseCrawler):
         self.thread_num = 30
         self.table = 'taotu'
         self.rule = {
-            'append_page_list_url': '/gq/',
+            # 'append_page_list_url': '/gq/',
             'page_list_url': 'listinfo-34-%page.html',
             'end_page': 2,
             'start_page': 2,
@@ -30,7 +30,7 @@ class TaoTu(BaseCrawler):
 
         r = re.search(r'([a-zA-Z]+)\.(\d+)', title)
         if not r:
-            self.logger.error('{}\t{}'.format(title, task))
+            self._fail(title, **kwargs)
             return
 
         number = r.group(2)
