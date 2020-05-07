@@ -65,7 +65,7 @@ class SouSi(BaseCrawler):
     def get_rosi_params(self, params: dict):
         title = params['title']
         r = re.search(r'([a-zA-Z0]+)\.(\d+)', title)
-        number = ''
+        number = 'no'
         if r:
             title = '{} {}'.format(params['category'], r.group(0))
             number = r.group(2)
