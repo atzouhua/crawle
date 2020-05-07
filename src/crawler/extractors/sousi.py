@@ -27,7 +27,7 @@ class SouSi(BaseCrawler):
         doc = data.get('doc')
 
         params = self.get_default_params(doc, data['url'])
-        if not params['download_link'] or not params['alias'] or params['alias'].isdigit():
+        if not params['alias'] or params['alias'].isdigit():
             self.fail(params['title'], **kwargs)
         else:
             action = params['alias']
@@ -52,6 +52,7 @@ class SouSi(BaseCrawler):
         alias = str(parse_result.path).replace('guochantaotu/', '').split('/')[1].lower()
         title = origin_title.replace(category, '')
         pwd, down_link = get_download_link_pwd(doc)
+        status = 1 if down_link else 0
         return {
             'title': title, 'alias': alias,
             'star': star.replace('匿名寫真', '').replace('匿名写真', ''),
@@ -59,7 +60,7 @@ class SouSi(BaseCrawler):
             'download_link': down_link,
             'pwd': pwd,
             'url': url,
-            'status': 1
+            'status': status
         }
 
     def get_rosi_params(self, params: dict):
