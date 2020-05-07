@@ -13,10 +13,10 @@ class TaoTu(BaseCrawler):
         self.thread_num = 30
         self.table = 'taotu'
         self.rule = {
-            'append_page_list_url': '/gc/rosimm/',
-            'page_list_url': 'gc/rosimm/index_%page.html',
-            'end_page': 104,
-            'start_page': 1,
+            'append_page_list_url': '/gq/',
+            'page_list_url': 'listinfo-34-%page.html',
+            'end_page': 2,
+            'start_page': 2,
             'page_rule': {'list': '.piclist li a'},
             'base_url': self.base_url
         }
