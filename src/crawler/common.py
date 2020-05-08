@@ -42,24 +42,22 @@ def get_tasks(rule: dict):
     tasks = []
     page_url = Config.get('url')
     base_url = rule.get('base_url')
-    if page_url:
-        tasks.append(format_url(page_url, base_url))
-    else:
+    if not page_url:
+        page_url = rule.get('page_list_url')
         if rule.get('append_page_list_url'):
             tasks.append(format_url(rule.get('append_page_list_url'), base_url))
 
-        start_page = Config.get('start', rule.get('start_page', 1))
-        end_page = Config.get('end', rule.get('end_page', 1))
+    start_page = Config.get('start', rule.get('start_page', 1))
+    end_page = Config.get('end', rule.get('end_page', 1))
 
-        if end_page < start_page:
-            end_page = start_page + 1
+    if end_page < start_page:
+        end_page = start_page + 1
 
-        page_url = rule.get('page_list_url')
-        for i in range(start_page, end_page + 1):
-            url = page_url.replace('%page', str(i))
-            if url.find('%cid') != -1:
-                url = url.replace('%cid', str(Config.get('cid')))
-            tasks.append(format_url(url, base_url))
+    for i in range(start_page, end_page + 1):
+        url = page_url.replace('%page', str(i))
+        if url.find('%cid') != -1:
+            url = url.replace('%cid', str(Config.get('cid')))
+        tasks.append(format_url(url, base_url))
 
     tasks.reverse()
     return tasks

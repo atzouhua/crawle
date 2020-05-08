@@ -39,7 +39,8 @@ class SouSi(BaseCrawler):
             after_params = getattr(self, action)(params)
             params.update(after_params)
 
-        self.save(params, **kwargs)
+        print(params)
+        # self.save(params, **kwargs)
 
     def get_default_params(self, doc, url):
         origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())
@@ -66,7 +67,7 @@ class SouSi(BaseCrawler):
 
     def get_rosi_params(self, params: dict):
         title = params['title']
-        r = re.search(r'([a-zA-Z0]+)\.(\d+)', title)
+        r = re.search(r'([a-zA-Z]+)\.(\d+)', title)
         number = 'no'
         if r:
             title = '{} {}'.format(params['category'], r.group(0))

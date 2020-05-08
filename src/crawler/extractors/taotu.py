@@ -14,6 +14,7 @@ class TaoTu(BaseCrawler):
         self.table = 'taotu'
         self.rule = {
             # 'append_page_list_url': '/gq/',
+            # listinfo-34-%page.html
             'page_list_url': '/gc/index_%page.html',
             'end_page': 2,
             'start_page': 2,
