@@ -15,8 +15,8 @@ class SeHuaTang(BaseCrawler):
         self.is_update = False
         self.rule = {
             'page_list_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
-            'end_page': 360,
-            'start_page': 360,
+            'end_page': 1,
+            'start_page': 1,
             'base_url': self.base_url,
             'post_rule': {'title': '#thread_subject', 'magnet_link': '.blockcode li'},
         }
@@ -61,7 +61,7 @@ class SeHuaTang(BaseCrawler):
                   'title': title,
                   'star': json.dumps(star), 'magnet_link': magnet_link, 'status': 1}
         if not magnet_link:
-            self._fail(params['title'])
+            self._fail(params['title'], **kwargs)
             return None
 
         if cid != 2:
