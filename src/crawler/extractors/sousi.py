@@ -12,7 +12,7 @@ class SouSi(BaseCrawler):
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
             'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 1,
+            'end_page': 30,
             'start_page': 1,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
             'post_rule': {"title": ".single h1"},

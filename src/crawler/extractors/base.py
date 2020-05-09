@@ -1,3 +1,4 @@
+import asyncio
 import platform
 import threading
 import time
@@ -45,6 +46,7 @@ class BaseCrawler:
         if len(self.data):
             DB.insert_all('{}{}'.format(self.table_prefix, self.table), self.data)
             self.data = []
+        self.process_time()
 
     def run(self):
         action = 'action_%s' % Config.get('action', 'index')
