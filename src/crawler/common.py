@@ -1,7 +1,9 @@
+import asyncio
 import os
 import re
 import socket
 from os.path import dirname, realpath
+from threading import Thread
 
 from progress.bar import Bar
 
@@ -85,5 +87,16 @@ def r1(pattern, text, group=1, default=None):
 def r2(pattern, text, repl=''):
     if not text:
         return None
-
     return re.sub(pattern, repl, text, re.IGNORECASE | re.DOTALL).strip()
+
+
+def start_loop(event_loop):
+    asyncio.set_event_loop(event_loop)
+    event_loop.run_forever()
+
+
+def get_event_loop():
+    event_loop = asyncio.new_event_loop()
+    t0 = Thread(target=start_loop, args=(event_loop,))
+    t0.start()
+    return event_loop

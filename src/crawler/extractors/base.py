@@ -8,7 +8,7 @@ from concurrent import futures
 import pyquery
 from progress.bar import Bar
 
-from ..common import format_url, get_progress_bar, get_tasks
+from ..common import format_url, get_progress_bar, get_tasks, get_event_loop
 from ..utils.config import Config
 from ..utils.db import DB
 from ..utils.http_client import HttpClient
@@ -55,18 +55,19 @@ class BaseCrawler:
             func()
 
     def action_index(self):
-        index_tasks = get_tasks(self.rule)
-        n = len(index_tasks)
+        url_list = get_tasks(self.rule)
+        n = len(url_list)
         if not n:
-            self.logger.info('empty tasks.')
+            self.logger.info('empty url list.')
             return
 
-        thread_num = min(n, 5)
-        if n > 100:
-            thread_num = 20
+        # thread_loop = get_event_loop()
 
-        result = self.execute(index_tasks, self._index_handler, thread_num=thread_num)
-        self.after_index(result)
+        main_loop = asyncio.new_event_loop()
+        tasks = [self.create_task(url, i=i, n=n) for i, url in enumerate(url_list)]
+        done = main_loop.run_until_complete(asyncio.wait(tasks))
+        print(done)
+        print(len(done))
 
     def after_index(self, result):
         thread_num = Config.get('thread', self.thread_num)
@@ -85,7 +86,7 @@ class BaseCrawler:
         post_url = Config.get('url')
         return self._post_handler(post_url, i=1, n=1, url=post_url)
 
-    def _index_handler(self, url: str, **kwargs) -> list:
+    async def create_task(self, url: str, **kwargs) -> list:
         title_rule = self.page_rule.get('title')
         thumbnail_rule = self.page_rule.get('thumbnail')
 
