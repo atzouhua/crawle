@@ -1,28 +1,25 @@
-import re
-from urllib import parse
-
-from crawler.common import r1, r2
-from .base import BaseCrawler
+from ..libs.base import BaseHandler
 
 
-class SouSi(BaseCrawler):
+class SouSi(BaseHandler):
 
     def __init__(self):
         super().__init__()
         self.base_url = 'http://www.sosi55.com'
         self.rule = {
-            'page_list_url': '/guochantaotu/list_22_%page.html',
-            'end_page': 30,
+            'page_url': '/guochantaotu/list_22_%page.html',
+            'end_page': 10,
             'start_page': 1,
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
-            'post_rule': {"title": ".single h1"},
+            'post_rule': {'title': '.single h1'},
             'base_url': self.base_url
         }
         self.charset = 'gbk'
         self.table = 'sousi'
         self.thread_num = 50
+        self.proxies = SS_PROXIES
 
-    def _post_handler(self, task, **kwargs):
+    def consumer_task(self, task, session, semaphore, **kwargs):
         data = super()._post_handler(task, **kwargs)
         doc = data.get('doc')
 

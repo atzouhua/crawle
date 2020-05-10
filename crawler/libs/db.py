@@ -1,7 +1,7 @@
+import logging
+
 from pymysql.cursors import DictCursor
 from pymysql import connect
-
-from crawler.utils.log import Logging
 
 
 class DB:
@@ -51,7 +51,7 @@ class DB:
                 db.executemany(sql, params)
                 result = db.rowcount
             except Exception as e:
-                Logging.get(__name__).exception(e)
+                logging.getLogger(__name__).exception(e)
         return result
 
     @classmethod

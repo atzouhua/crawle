@@ -2,10 +2,10 @@ import re
 
 import pyquery
 
-from .base import BaseCrawler
+from ..libs.base import BaseHandler
 
 
-class TaoTu(BaseCrawler):
+class TaoTu(BaseHandler):
 
     def __init__(self):
         super().__init__()
@@ -15,15 +15,18 @@ class TaoTu(BaseCrawler):
         self.rule = {
             # 'append_page_list_url': '/gq/',
             # listinfo-34-%page.html
-            'page_list_url': '/gc/index_%page.html',
-            'end_page': 2,
+            'page_url': '/gc/index_%page.html',
+            'end_page': 10,
             'start_page': 2,
             'page_rule': {'list': '.piclist li a'},
             'base_url': self.base_url
         }
 
-    def _post_handler(self, task, **kwargs):
-        html = self.http.html(task)
+    async def detail_page(self, task, session, **kwargs):
+        if type(task) == dict:
+            task = task.get('url')
+
+        html = await self.get_html(session, task)
         html = html.replace('</html>', '').replace('</body>', '')
         doc = pyquery.PyQuery(html)
         title = doc('.breadnav a').eq(-1).text()
@@ -36,10 +39,8 @@ class TaoTu(BaseCrawler):
             title = 'ROSI NO.{}'.format(number)
         status = 1 if download_link else 0
 
-        params = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
-                  'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
-        # print(params)
-        self.save(params, **kwargs)
+        return {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
+                'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
 
     def get_download_link(self, doc):
         elements = doc('.pictext a')

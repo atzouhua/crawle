@@ -2,19 +2,17 @@ import json
 
 import pyquery
 
-from .base import BaseCrawler
-from ..common import format_url, r1, SS_PROXIES
-from ..utils.config import Config
+from ..libs.base import BaseHandler
 
 
-class SeHuaTang(BaseCrawler):
+class SeHuaTang(BaseHandler):
 
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.sehuatang.net'
         self.is_update = False
         self.rule = {
-            'page_list_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
+            'page_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
             'end_page': 1,
             'start_page': 1,
             'base_url': self.base_url,
