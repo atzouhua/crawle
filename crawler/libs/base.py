@@ -1,14 +1,16 @@
-import asyncio
-import itertools
 import logging
+import os
 import time
+from concurrent import futures
 
 import pyquery
-import uvloop
-from aiohttp import ClientSession
+import requests
+from requests.adapters import HTTPAdapter
 
-from .db import DB
 from .common import format_url, HTTP_PROXIES
+from .db import DB
+
+DEFAULT_POOL_SIZE = 20
 
 
 class BaseHandler:
@@ -17,6 +19,10 @@ class BaseHandler:
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36'}
         self.proxies = HTTP_PROXIES
+        self.session = requests.session()
+        self.session.mount('https://', HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE))
+        self.session.mount('http://', HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE))
+
         self.charset = 'utf-8'
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -50,78 +56,62 @@ class BaseHandler:
             self.logger.warning('empty url list.')
             return
 
-        tasks = self.crawl(url_list)
+        tasks = self.crawl(url_list, self.page_handler)
         task_count = len(tasks)
         self.logger.info(f'task count: {task_count}')
 
         if task_count:
-            self.crawl(tasks, self.detail_handler, self.on_result)
+            self.crawl(tasks, self.detail_handler)
 
-    def crawl(self, tasks: list, task_handler=None, callback=None, semaphore_count=100):
-        if not task_handler:
-            task_handler = self.page_handler
-
-        main_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(main_loop)
-        semaphore = asyncio.Semaphore(semaphore_count)
+    def crawl(self, tasks: list, task_handler=None):
+        tasks.reverse()
+        result_list = []
         n = len(tasks)
+        thread_num = self.config.get('thread_num', 20)
+        args = [i for i in range(1, n + 1)]
+        args2 = [n for i in range(1, n + 1)]
 
-        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        chunk_size = min(20, int(n / 5))
+        chunk_size = max(30, chunk_size)
+        with futures.ThreadPoolExecutor(thread_num) as executor:
+            for num, result in zip(tasks, executor.map(task_handler, tasks, args, args2, chunksize=chunk_size)):
+                if result:
+                    if type(result) == list:
+                        result_list.extend(result)
+                    else:
+                        result_list.append(result)
+        return result_list
 
-        new_tasks = []
-
-        async def _run():
-            async with semaphore:
-                async with ClientSession() as session:
-                    for i, task in enumerate(tasks):
-                        future = asyncio.ensure_future(task_handler(task, i=i + 1, n=n, session=session))
-                        if callback:
-                            future.add_done_callback(callback)
-                        new_tasks.append(future)
-                    return await asyncio.gather(*new_tasks)
-
-        try:
-            result = main_loop.run_until_complete(_run())
-            if len(result) > 1:
-                return [x for j in result for x in j]
-            return result
-        except Exception as e:
-            logging.exception(e)
-            return None
-        finally:
-            if not main_loop.is_closed():
-                main_loop.close()
-
-    async def get_html(self, session, url, method='GET', callback=None, **kwargs):
+    def get_html(self, url, method='GET', callback=None, **kwargs):
         kwargs.setdefault('timeout', 10)
-        kwargs.setdefault('verify_ssl', False)
-        kwargs.setdefault('proxy', self.proxies)
+        kwargs.setdefault('proxies', self.proxies)
         kwargs.setdefault('headers', self.headers)
+        # kwargs.setdefault('verify', False)
         ex = None
 
         for i in range(3):
             try:
-                async with session.request(method, url, **kwargs) as response:
-                    html = await response.text(encoding=self.charset)
-                    if callback:
-                        return callback(html)
-                    return html
+                response = self.session.request(method, url, **kwargs)
+                response.encoding = self.charset
+                if callback:
+                    return callback(response)
+                return response.text
             except Exception as e:
                 ex = e
-                await asyncio.sleep(1)
+                time.sleep(1)
         raise ex
 
-    async def doc(self, url, session, method='GET', **kwargs):
+    def doc(self, url, method='GET', **kwargs):
         if type(url) == dict:
             url = url.get('url')
-        return pyquery.PyQuery(await self.get_html(session, url, method, **kwargs))
+        return pyquery.PyQuery(self.get_html(url, method, None, **kwargs))
 
-    async def page_handler(self, task, session, **kwargs):
+    def page_handler(self, task, *args):
         title_rule = self.page_rule.get('title')
         thumbnail_rule = self.page_rule.get('thumbnail')
 
-        self.logger.info('[%s/%s] Get page: %s' % (kwargs.get('i'), kwargs.get('n'), task))
-        doc = await self.doc(task, session)
+        self.logger.info('[%s/%s] Get page: %s' % (args[0], args[1], task))
+        doc = self.doc(task)
         elements = doc(self.page_rule.get('list'))
         result = []
         for element in elements.items():
@@ -137,18 +127,20 @@ class BaseHandler:
             result.append(data)
         return result
 
-    async def detail_handler(self, task, session, **kwargs):
+    def detail_handler(self, task, *args):
         if type(task) == dict:
             task = task.get('url')
         try:
-            doc = await self.doc(task, session)
-            for field, rule in self.post_rule.items():
-                if field == 'thumbnail':
-                    kwargs[field] = doc(rule).attr('src')
-                else:
-                    kwargs[field] = doc(rule).text()
-            kwargs.setdefault('doc', doc)
-            return kwargs
+            doc = self.doc(task)
+            data = {}
+            if self.post_rule:
+                for field, rule in self.post_rule.items():
+                    if field == 'thumbnail':
+                        data[field] = doc(rule).attr('src')
+                    else:
+                        data[field] = doc(rule).text()
+            data.setdefault('doc', doc)
+            return data
         except Exception as e:
             logging.exception(e)
 

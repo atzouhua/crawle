@@ -16,17 +16,17 @@ class TaoTu(BaseHandler):
             # 'append_page_list_url': '/gq/',
             # listinfo-34-%page.html
             'page_url': '/gc/index_%page.html',
-            'end_page': 10,
+            'end_page': 2,
             'start_page': 2,
             'page_rule': {'list': '.piclist li a'},
             'base_url': self.base_url
         }
 
-    async def detail_page(self, task, session, **kwargs):
+    def detail_handler(self, task, *args):
         if type(task) == dict:
             task = task.get('url')
 
-        html = await self.get_html(session, task)
+        html = self.get_html(task)
         html = html.replace('</html>', '').replace('</body>', '')
         doc = pyquery.PyQuery(html)
         title = doc('.breadnav a').eq(-1).text()
@@ -39,8 +39,10 @@ class TaoTu(BaseHandler):
             title = 'ROSI NO.{}'.format(number)
         status = 1 if download_link else 0
 
-        return {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
+        data = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
                 'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
+        print(args, data)
+        return data
 
     def get_download_link(self, doc):
         elements = doc('.pictext a')

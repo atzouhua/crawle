@@ -1,9 +1,7 @@
-import asyncio
 import os
 import re
 import socket
 from os.path import dirname, realpath
-from threading import Thread
 
 from progress.bar import Bar
 
@@ -13,7 +11,10 @@ ip = s.getsockname()[0]
 s.close()
 
 if ip.find('10.3.19') != -1 or ip.find('192.168') != -1 or ip.find('10.0.2') != -1:
-    HTTP_PROXIES = 'http://127.0.0.1:1081'
+    HTTP_PROXIES = {
+        'http': 'http://127.0.0.1:1081',
+        'https': 'http://127.0.0.1:1081',
+    }
 else:
     HTTP_PROXIES = None
 
@@ -29,9 +30,6 @@ def format_url(url: str, base_url: str):
     if url.find('http') == -1:
         url = '{}/{}'.format(base_url.strip('/'), url.strip('/'))
     return url
-
-
-
 
 
 def get_terminal_size():
@@ -61,15 +59,3 @@ def r2(pattern, text, repl=''):
     if not text:
         return None
     return re.sub(pattern, repl, text, re.IGNORECASE | re.DOTALL).strip()
-
-
-def start_loop(event_loop):
-    asyncio.set_event_loop(event_loop)
-    event_loop.run_forever()
-
-
-def get_event_loop():
-    event_loop = asyncio.new_event_loop()
-    t0 = Thread(target=start_loop, args=(event_loop,))
-    t0.start()
-    return event_loop

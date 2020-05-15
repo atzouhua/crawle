@@ -55,7 +55,7 @@ class MkZhan(BaseHandler):
                 book['items'] = json.dumps(item_result, ensure_ascii=False)
         return book, kwargs
 
-    async def item_handler(self, task, session, **kwargs):
+    async def item_handler(self, task, session):
         doc = await self.doc(task, session)
         elements = doc('.rd-article-wr .rd-article__pic img')
         item_name = doc('.last-crumb').text()

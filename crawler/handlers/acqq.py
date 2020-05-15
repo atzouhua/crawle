@@ -4,18 +4,18 @@ import re
 
 import pyquery
 
-from .base import BaseCrawler
-from ..common import format_url, r1
+from ..libs.common import format_url, r1
+from ..libs.base import BaseHandler
 
 
-class AcQQ(BaseCrawler):
+class AcQQ(BaseHandler):
 
     def __init__(self):
         super().__init__()
         self.base_url = 'https://ac.qq.com'
         self.is_update = False
         self.rule = {
-            'page_list_url': '/Comic/all/search/time/vip/1/page/%page',
+            'page_url': '/Comic/all/search/time/vip/1/page/%page',
             'end_page': 1,
             'start_page': 1,
             'page_rule': {'list': '.ret-search-list li .ret-works-cover a.mod-cover-list-thumb'},
