@@ -20,8 +20,10 @@ class BaseHandler:
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36'}
         self.proxies = HTTP_PROXIES
         self.session = requests.session()
-        self.session.mount('https://', HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE))
-        self.session.mount('http://', HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE))
+        self.session.mount('https://',
+                           HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 50))
+        self.session.mount('http://',
+                           HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 50))
 
         self.charset = 'utf-8'
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -63,16 +65,15 @@ class BaseHandler:
         if task_count:
             self.crawl(tasks, self.detail_handler)
 
-    def crawl(self, tasks: list, task_handler=None):
+    def crawl(self, tasks: list, task_handler, thread_num=10):
         tasks.reverse()
         result_list = []
         n = len(tasks)
-        thread_num = self.config.get('thread_num', 20)
+        thread_num = self.config.get('thread_num', thread_num)
         args = [i for i in range(1, n + 1)]
         args2 = [n for i in range(1, n + 1)]
 
-        chunk_size = min(20, int(n / 5))
-        chunk_size = max(30, chunk_size)
+        chunk_size = min(10, int(n / 5))
         with futures.ThreadPoolExecutor(thread_num) as executor:
             for num, result in zip(tasks, executor.map(task_handler, tasks, args, args2, chunksize=chunk_size)):
                 if result:

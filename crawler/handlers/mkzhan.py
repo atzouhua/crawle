@@ -28,8 +28,8 @@ class MkZhan(BaseHandler):
         result = self._index_handler(_url, **kwargs)
         self.after_index(result)
 
-    async def detail_handler(self, task, session, **kwargs):
-        doc = await self.doc(task, session)
+    def detail_handler(self, task, *args):
+        doc = self.doc(task)
         _container = doc('.de-container')
         elements = _container('.chapter__list-box li a')
         book = {
@@ -49,14 +49,15 @@ class MkZhan(BaseHandler):
             if self.is_update:
                 book_items = book_items[0:3]
 
-            item_result = self.crawl(book_items, self.item_handler)
+            item_result = self.crawl(book_items, self.item_handler, 20)
             if item_result and len(item_result):
                 book['last_item'] = item_result[-1].get('name')
                 book['items'] = json.dumps(item_result, ensure_ascii=False)
-        return book, kwargs
+        print(args)
+        return book
 
-    async def item_handler(self, task, session):
-        doc = await self.doc(task, session)
+    def item_handler(self, task, *args):
+        doc = self.doc(task)
         elements = doc('.rd-article-wr .rd-article__pic img')
         item_name = doc('.last-crumb').text()
         r = r1('^[0-9]*$', item_name, 0)
