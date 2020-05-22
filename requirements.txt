@@ -1,5 +1,4 @@
 requests~=2.21.0
 pyquery~=1.4.0
 pymysql~=0.9.3
-uvloop
-aiohttp
+progress~=1.5
