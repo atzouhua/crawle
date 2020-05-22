@@ -29,7 +29,8 @@ class Download(BaseHandler):
         for download in downloads:
             if str(download.name).find('METADATA') != -1:
                 continue
+
             if download.is_complete:
-                sql = 'select * from ii_sehuatang where title = %s'
-                data = DB.one(sql, (download.name,))
+                sql = 'select * from ii_sehuatang where magnet_link like \'%s\''
+                data = DB.one(sql, (download.info_hash,))
                 print(data)

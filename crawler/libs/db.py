@@ -67,7 +67,7 @@ class DB:
                     else:
                         data = invert_op
             except Exception as e:
-                Logging.get(__name__).exception(e)
+                logging.exception(e)
             return data
 
     @classmethod
