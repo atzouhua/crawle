@@ -1,7 +1,3 @@
-import json
-
-import pyquery
-
 from ..libs.base import BaseHandler
 from ..libs.common import r1
 
