@@ -5,6 +5,7 @@ from pathlib import Path
 import aria2p
 
 from crawler.libs.base import BaseHandler
+from crawler.libs.common import md5
 from crawler.libs.db import DB
 
 VIDEO_PATH = '/data/video'
@@ -46,18 +47,23 @@ class Download(BaseHandler):
             if not data:
                 continue
 
-            result = {}
+            result = []
             for file in download.files:
-                f = Path(file)
-                file_name = str(f.absolute()).lower()
+                file_name = str(file).lower()
                 if file_name.find('uue29') != -1:
-                    os.remove(file_name)
+                    os.system("rm -f '{}'".format(file_name))
                     continue
 
-                if file_name.find('mp4') == -1 or file_name.find('mkv') == -1 or file_name.find('wmv') == -1:
-                    os.remove(file_name)
-                if not result.get(data['id']):
-                    result[data['id']] = []
-                result[data['id']].append(file_name)
-            print(result)
-            print('')
+                if file_name.find('mp4') != -1 or file_name.find('mkv') != -1 or file_name.find('wmv') != -1:
+                    result.append(file_name)
+                else:
+                    os.system("rm -f '{}'".format(file_name))
+
+            n = len(result)
+            for i, file in enumerate(result):
+                file_name = md5(data['title'])
+                if n > 1:
+                    file_name = '{}-{}'.format(file_name, (i + 1))
+                ext = file.split('.')[-1]
+                new_file = os.path.join(VIDEO_PATH, file_name, '.', ext)
+                os.system("mv '{}' {}".format(file, new_file))
