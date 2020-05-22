@@ -82,19 +82,21 @@ class BaseHandler:
                         result_list.append(result)
         return result_list
 
-    def get_html(self, url, method='GET', callback=None, **kwargs):
+    def get_html(self, url, method='GET', data=None, callback=None, **kwargs):
         kwargs.setdefault('timeout', 10)
         kwargs.setdefault('proxies', self.proxies)
         kwargs.setdefault('headers', self.headers)
         # kwargs.setdefault('verify', False)
         ex = None
+        if data:
+            method = 'POST'
 
         for i in range(3):
             try:
-                response = self.session.request(method, url, **kwargs)
+                response = self.session.request(method, url, data=data, **kwargs)
                 response.encoding = self.charset
                 if callback:
-                    return callback(response)
+                    return response
                 return response.text
             except Exception as e:
                 ex = e

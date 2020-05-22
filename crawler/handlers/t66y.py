@@ -8,26 +8,23 @@ import pyquery
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
-from crawler.common import DATA_PATH, SS_PROXIES
-from .base import BaseCrawler
+from crawler.libs.base import BaseHandler
+from crawler.libs.common import DATA_PATH
 
 
-class T66y(BaseCrawler):
+class T66y(BaseHandler):
 
     def __init__(self):
         super().__init__()
         self.base_url = 'http://t66y.com'
         self.page_url = 'thread0806.php?fid=7&search=today'
         self.charset = 'gbk'
-        self.proxies = SS_PROXIES
         self.user = 'lewei123'
         self.pwd = 'hack3321'
         self.cookie_file = ''
 
     def before_run(self):
         super(T66y, self).before_run()
-        self.http.headers[
-            'User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3239.108 Safari/537.36'
         self.cookie_file = os.path.join(DATA_PATH, 't66y_{}.cookie'.format(self.user))
 
     def run(self):
@@ -69,7 +66,7 @@ class T66y(BaseCrawler):
                   'fid': '7',
                   'step': '2', 'action': 'reply', 'pid': '', 'verify': 'verify'
                   }
-        html = self.http.html('%s/post.php?' % self.base_url, data=params)
+        html = self.get_html('%s/post.php?' % self.base_url, data=params)
         if html.find('發貼完畢點擊進入主題列表') != -1:
             self.logger.info('【%s】reply success!' % data['title'])
             return True
@@ -97,8 +94,7 @@ class T66y(BaseCrawler):
         tid_list = self.get_my_reply_list()
 
         url = '%s/%s' % (self.base_url, self.page_url)
-        html = self.http.html(url)
-        doc = pyquery.PyQuery(html)
+        doc = self.doc(url)
         elements = doc('#ajaxtable .tr3')
         for element in elements.items():
             element_a = element('td').eq(1)
@@ -131,8 +127,7 @@ class T66y(BaseCrawler):
 
     def get_my_reply_list(self):
         url = '%s/personal.php?action=post' % self.base_url
-        html = self.http.html(url)
-        doc = pyquery.PyQuery(html)
+        doc = self.doc(url)
         elements = doc('.t3 div.t .a2')
         tid_list = []
         for element in elements.items():
@@ -143,8 +138,7 @@ class T66y(BaseCrawler):
 
     def get_profile(self):
         url = '%s/profile.php' % self.base_url
-        html = self.http.html(url)
-        doc = pyquery.PyQuery(html)
+        doc = self.doc(url)
         element = doc('#main .t3').eq(1)
         element = element('table td').eq(0)
         element = element('div.t').eq(1)
@@ -157,8 +151,7 @@ class T66y(BaseCrawler):
         jump_url = '%s/%s' % (self.base_url, self.page_url)
         params = {'jumpurl': jump_url, 'pwuser': self.user, 'pwpwd': self.pwd, 'forward': jump_url, 'step': 2,
                   'cktime': 86400 * 365}
-        res = self.http.fetch(url, params)
-        res.encoding = self.charset
+        res = self.get_html(url, data=params, callback=True)
         html = res.text
         if html.find('您已經順利登錄') != -1:
             self.logger.info('[{}] login success'.format(self.user))
@@ -175,7 +168,7 @@ class T66y(BaseCrawler):
             with open(self.cookie_file, 'r') as f:
                 cookies = f.read()
             cookies = cookiejar_from_dict(json.loads(cookies))
-            self.http.request.cookies = cookies
+            self.session.request.cookies = cookies
         else:
             self.login()
 

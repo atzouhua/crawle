@@ -32,7 +32,7 @@ def script_main(config: dict):
 
 def cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument('craw', nargs='?', default='mgstage')
+    parser.add_argument('craw', nargs='?', default='t66y')
     parser.add_argument('action', nargs='?')
     parser.add_argument('url', nargs='?')
     parser.add_argument('--start', type=int)

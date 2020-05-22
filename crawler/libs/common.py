@@ -18,7 +18,7 @@ if ip.find('10.3.19') != -1 or ip.find('192.168') != -1 or ip.find('10.0.2') != 
 else:
     HTTP_PROXIES = None
 
-ROOT_PATH = dirname(dirname(dirname(dirname(realpath(__file__)))))
+ROOT_PATH = dirname(dirname(dirname(realpath(__file__))))
 DATA_PATH = os.path.join(ROOT_PATH, 'data')
 LOG_PATH = os.path.join(DATA_PATH, 'logs')
 
