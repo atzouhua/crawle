@@ -27,4 +27,9 @@ class Download(BaseHandler):
     def action_print(self):
         downloads = self.aria2.get_downloads()
         for download in downloads:
-            print(download.name, download.status, download.is_complete)
+            if str(download.name).find('METADATA') != -1:
+                continue
+            if download.is_complete:
+                sql = 'select * from ii_sehuatang where title = %s'
+                data = DB.one(sql, (download.name,))
+                print(data)

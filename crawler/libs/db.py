@@ -20,8 +20,8 @@ class DB:
         self.conn.close()
 
     @classmethod
-    def one(cls, sql):
-        return cls.query_internal(sql, None, 'fetchone')
+    def one(cls, sql, params=None):
+        return cls.query_internal(sql, params, 'fetchone')
 
     @classmethod
     def all(cls, sql):
