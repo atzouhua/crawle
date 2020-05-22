@@ -1,4 +1,5 @@
 import logging
+import threading
 import time
 from concurrent import futures
 
@@ -34,6 +35,7 @@ class BaseHandler:
 
         self.begin_tme = time.perf_counter()
         self.table = ''
+        self.lock = threading.Lock()
 
     def before_run(self):
         pass
@@ -163,7 +165,9 @@ class BaseHandler:
             message = params['title']
         self.processing(kwargs.get('i'), kwargs.get('n'), message)
         if db_save:
+            self.lock.acquire()
             self._db_save(params)
+            self.lock.release()
 
     def _db_save(self, params: dict):
         self.result.append(params)

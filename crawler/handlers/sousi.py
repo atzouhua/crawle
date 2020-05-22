@@ -82,7 +82,7 @@ def get_download_link_pwd(doc):
     elif summary.find('解压') != -1:
         re_pwd = re.search(r'【解压密码】([^\s]*)', summary)
         if re_pwd:
-            pwd = re_pwd.group(1).strip()
+            pwd = re_pwd.group(1).strip().replace(':http', 'http')
 
     link_list = re.findall(r'[a-zA-z]+://[^\s]*', summary)
     if link_list and len(link_list):
