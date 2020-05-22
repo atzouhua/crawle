@@ -27,4 +27,4 @@ class Download(BaseHandler):
     def action_print(self):
         downloads = self.aria2.get_downloads()
         for download in downloads:
-            print(download.name, download.status, download.options)
+            print(download.name, download.status, download.is_complete)
