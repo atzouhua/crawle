@@ -1,5 +1,6 @@
 # nohup rclone mount caoyufei_edu:/ /data/drive --allow-other --allow-non-empty --vfs-cache-mode writes >/dev/null 2>&1 &
 import os
+from pathlib import Path
 
 import aria2p
 
@@ -18,9 +19,9 @@ class Download(BaseHandler):
         super().__init__()
         self.aria2 = aria2p.API(
             aria2p.Client(
-                host="http://localhost",
+                host='http://localhost',
                 port=6800,
-                secret="66a712e1d520b7fdc2db"
+                secret=self.config.get('secret', '66a712e1d520b7fdc2db')
             )
         )
 
@@ -47,7 +48,12 @@ class Download(BaseHandler):
 
             result = {}
             for file in download.files:
-                file_name = str(file.path).lower()
+                f = Path(file)
+                file_name = str(f.absolute()).lower()
+                if file_name.find('uue29') != -1:
+                    os.remove(file_name)
+                    continue
+
                 if file_name.find('mp4') == -1 or file_name.find('mkv') == -1 or file_name.find('wmv') == -1:
                     os.remove(file_name)
                 if not result.get(data['id']):

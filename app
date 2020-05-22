@@ -39,6 +39,7 @@ def cli():
     parser.add_argument('--end', type=int)
     parser.add_argument('--cid', type=int, default=104)
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--secret', type=str)
 
     parsed_args = vars(parser.parse_args())
     for key in list(parsed_args.keys()):

@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import socket
@@ -24,6 +25,13 @@ LOG_PATH = os.path.join(DATA_PATH, 'logs')
 
 if not os.path.isdir(DATA_PATH):
     os.makedirs(DATA_PATH)
+
+
+def md5(string: str):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    _md5 = m.hexdigest()
+    return _md5[8:-8].upper()
 
 
 def format_url(url: str, base_url: str):
