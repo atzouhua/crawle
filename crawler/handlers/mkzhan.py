@@ -53,7 +53,8 @@ class MkZhan(BaseHandler):
             if item_result and len(item_result):
                 book['last_item'] = item_result[-1].get('name')
                 book['items'] = json.dumps(item_result, ensure_ascii=False)
-        print(args)
+        res = self.get_html('http://hahamh.me/api/post-save', 'POST', data=book)
+        print(args, res)
         return book
 
     def item_handler(self, task, *args):

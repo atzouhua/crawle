@@ -3,6 +3,7 @@ import json
 import pyquery
 
 from ..libs.base import BaseHandler
+from ..libs.common import r1
 
 
 class SeHuaTang(BaseHandler):
@@ -10,73 +11,46 @@ class SeHuaTang(BaseHandler):
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.sehuatang.net'
-        self.is_update = False
         self.rule = {
             'page_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
             'end_page': 1,
             'start_page': 1,
             'base_url': self.base_url,
+            'page_rule': {'list': '#threadlisttableid tbody[id^="normalthread"] a.s'},
             'post_rule': {'title': '#thread_subject', 'magnet_link': '.blockcode li'},
         }
-        self.proxies = SS_PROXIES
-        self.table = 'sehuatang'
+        self.table = 'ii_sehuatang'
 
     def action_test(self):
         print(self._get_image('dnjr-027'))
 
-    def _index_handler(self, url: str, **kwargs) -> list:
-        self.logger.info('[%s/%s] Get page: %s' % (kwargs.get('i'), kwargs.get('n'), url))
-        html = self.http.html(url)
-        doc = pyquery.PyQuery(html)
-        body_elements = doc('#threadlisttableid tbody')
-        result = []
-        for element in body_elements.items():
-            body_id = element.attr('id')
-            if not body_id or body_id.find('normalthread') == -1:
-                continue
-
-            a_element = element('a.s')
-            url = format_url(a_element.attr('href'), self.base_url)
-            title = a_element.text()
-            result.append({'title': title, 'url': url, 'thumbnail': ''})
-        return result
-
-    def _post_handler(self, task, **kwargs):
-        data = super(SeHuaTang, self)._post_handler(task, **kwargs)
+    def detail_handler(self, task, *args):
+        data = super(SeHuaTang, self).detail_handler(task, *args)
         title = data['title']
         magnet_link = data['magnet_link']
-        alias = r1(r'([a-zA-z0-9-]+-[0-9]+)', title, 1, '')
-        cid = int(Config.get('cid'))
+        cid = int(self.config.get('cid'))
+        status = 1 if magnet_link else 0
+        params = {'url': data['url'], 'title': title, 'magnet_link': magnet_link, 'status': status, 'cid': cid}
+        params.update(self.get_default_params(params, cid))
+        self.save(params, i=args[0], n=args[1])
 
+    def get_default_params(self, params, cid):
+        if cid == 2 or cid == 104:
+            return {}
+
+        alias = r1(r'([a-zA-z0-9-]+-[0-9]+)', params['title'], 1, '')
         thumbnail = ''
         star = images = []
         if alias:
             thumbnail, images, star = self._get_image(alias)
             if len(images) > 10:
                 images = images[0:10]
-
-        params = {'alias': alias, 'thumbnail': thumbnail, 'images': json.dumps(images), 'url': task,
-                  'title': title,
-                  'star': json.dumps(star), 'magnet_link': magnet_link, 'status': 1}
-        if not magnet_link:
-            self._fail(params['title'], **kwargs)
-            return None
-
-        if cid != 2:
-            if not alias:
-                return None
-            params['alias'] = params['alias'].upper()
-            # print(title, alias)
-            self.save(params, 'alias', **kwargs)
-        else:
-            params['status'] = 2
-            # print(params)
-            self.save(params, 'title', **kwargs)
+            alias = alias.upper()
+        return {'alias': alias, 'star': star, 'thumbnail': thumbnail, 'images': images}
 
     def _get_image(self, alias):
         try:
-            html = self.http.html('https://www.busdmm.one/{}'.format(alias))
-            doc = pyquery.PyQuery(html)
+            doc = self.doc('https://www.busdmm.one/{}'.format(alias))
             thumbnail = doc('.bigImage').attr('href')
             elements = doc('#sample-waterfall a')
             images = []
@@ -88,8 +62,7 @@ class SeHuaTang(BaseHandler):
                 star_list.append(element.text())
             return thumbnail, images, star_list
         except Exception as e:
-            html = self.http.html('http://www.jav321.com/search', {'sn': alias})
-            doc = pyquery.PyQuery(html)
+            doc = self.doc('http://www.jav321.com/search', {'sn': alias})
             elements = doc('.row .col-md-3 .col-xs-12 a img')
             images = []
             for element in elements.items():

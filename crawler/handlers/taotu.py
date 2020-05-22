@@ -10,8 +10,7 @@ class TaoTu(BaseHandler):
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.192td.com/'
-        self.thread_num = 30
-        self.table = 'taotu'
+        self.table = 'ii_taotu'
         self.rule = {
             # 'append_page_list_url': '/gq/',
             # listinfo-34-%page.html
@@ -41,8 +40,7 @@ class TaoTu(BaseHandler):
 
         data = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
                 'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
-        print(args, data)
-        return data
+        self.save(data, i=args[0], n=args[1])
 
     def get_download_link(self, doc):
         elements = doc('.pictext a')
@@ -66,8 +64,7 @@ class TaoTu(BaseHandler):
         return self.get_download_link_by_bd(bd_link)
 
     def get_download_link_by_bd(self, url):
-        html = self.http.html(url)
-        doc = pyquery.PyQuery(html)
+        doc = self.doc(url)
         element = doc('table.td_line td')
         pwd = element.eq(7).text()
         download_element = element.eq(9)

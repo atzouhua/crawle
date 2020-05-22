@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from concurrent import futures
 
@@ -10,7 +9,7 @@ from requests.adapters import HTTPAdapter
 from .common import format_url, HTTP_PROXIES
 from .db import DB
 
-DEFAULT_POOL_SIZE = 20
+DEFAULT_POOL_SIZE = 50
 
 
 class BaseHandler:
@@ -21,9 +20,9 @@ class BaseHandler:
         self.proxies = HTTP_PROXIES
         self.session = requests.session()
         self.session.mount('https://',
-                           HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 50))
+                           HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 70))
         self.session.mount('http://',
-                           HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 50))
+                           HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 70))
 
         self.charset = 'utf-8'
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -65,7 +64,7 @@ class BaseHandler:
         if task_count:
             self.crawl(tasks, self.detail_handler)
 
-    def crawl(self, tasks: list, task_handler, thread_num=10):
+    def crawl(self, tasks: list, task_handler, thread_num=5):
         tasks.reverse()
         result_list = []
         n = len(tasks)
@@ -141,6 +140,7 @@ class BaseHandler:
                     else:
                         data[field] = doc(rule).text()
             data.setdefault('doc', doc)
+            data.setdefault('url', task)
             return data
         except Exception as e:
             logging.exception(e)
@@ -156,7 +156,9 @@ class BaseHandler:
         result_info = result[1]
         self.processing(result_info['i'], result_info['n'], result[0]['title'])
 
-    def save(self, params, message, db_save=True, **kwargs):
+    def save(self, params, message=None, db_save=True, **kwargs):
+        if not message:
+            message = params['title']
         self.processing(kwargs.get('i'), kwargs.get('n'), message)
         if db_save:
             self._db_save(params)
