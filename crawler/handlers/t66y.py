@@ -168,7 +168,7 @@ class T66y(BaseHandler):
             with open(self.cookie_file, 'r') as f:
                 cookies = f.read()
             cookies = cookiejar_from_dict(json.loads(cookies))
-            self.session.request.cookies = cookies
+            self.session.cookies = cookies
         else:
             self.login()
 
