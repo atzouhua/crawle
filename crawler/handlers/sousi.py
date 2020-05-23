@@ -25,9 +25,13 @@ class SouSi(BaseHandler):
         data = super().detail_handler(task, *args)
         doc = data.get('doc')
 
-        params = self.get_default_params(doc, data['url'])
-        if not params['alias'] or params['alias'].isdigit():
-            self.logger.warning('{}\t{}'.format(params['title'], task))
+        try:
+            params = self.get_default_params(doc, data['url'])
+            if not params['alias'] or params['alias'].isdigit():
+                self.logger.warning('{}\t{}'.format(params['title'], task))
+                return None
+        except Exception as e:
+            self.logger.exception(e, data['url'])
             return None
 
         action = params['alias']
@@ -42,18 +46,23 @@ class SouSi(BaseHandler):
         self.save(params, i=args[0], n=args[1])
 
     def get_default_params(self, doc, url):
-        origin_title = r2(r'\[.+?\]', doc(self.post_rule.get('title')).text())
-        star = r1(r'((VOL|NO)\.\d+)\s([^[]+)', origin_title, 3, '')
+        origin_title = doc(self.post_rule.get('title')).text()
+        _origin_title = r2(r'\[.+?\]', origin_title)
+        if not _origin_title:
+            _origin_title = origin_title
+
+        star = r1(r'((VOL|NO)\.\d+)\s([^[]+)', _origin_title, 3, '')
         category = doc('.down_r_title a').eq(-1).text().replace('写真', '').replace('套图', '')
         category_en = r1(r'[a-zA-Z0-9]+', category, 0)
         if category_en and len(category_en) > 2 and category != category_en:
             category = category.replace(category_en, '')
         parse_result = parse.urlparse(url)
         alias = str(parse_result.path).replace('guochantaotu/', '').split('/')[1].lower()
-        title = origin_title.replace(category, '')
+        title = _origin_title.replace(category, '')
         pwd, down_link = get_download_link_pwd(doc)
         status = 1 if down_link else 0
         return {
+            'origin_title': origin_title,
             'title': title, 'alias': alias,
             'star': star.replace('匿名寫真', '').replace('匿名写真', ''),
             'category': category,
