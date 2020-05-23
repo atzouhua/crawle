@@ -33,9 +33,6 @@ class TaoTu(BaseHandler):
         html = self.get_html(task)
         html = html.replace('</html>', '').replace('</body>', '')
         doc = pyquery.PyQuery(html)
-        all_num = doc('#allnum').text()
-        if all_num and int(all_num) < 10:
-            return None
 
         origin_title = doc('.breadnav a').eq(-1).text()
         download_link, pwd = self.get_download_link(doc)
