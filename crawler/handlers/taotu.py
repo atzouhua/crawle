@@ -67,6 +67,8 @@ class TaoTu(BaseHandler):
         doc = self.doc(url)
         element = doc('table.td_line td')
         pwd = element.eq(7).text()
+        if pwd:
+            pwd.replace('密码: ', '')
         download_element = element.eq(9)
         download_link = download_element('a').attr('href')
         return download_link, pwd
