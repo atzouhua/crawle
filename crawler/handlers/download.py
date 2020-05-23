@@ -37,10 +37,11 @@ class Download(BaseHandler):
     def action_print(self):
         downloads = self.aria2.get_downloads()
         for download in downloads:
-            if str(download.name).find('METADATA') != -1:
+            if not download.is_complete:
                 continue
 
-            if not download.is_complete:
+            if str(download.name).find('METADATA') != -1:
+                self.aria2.client.remove(download.gid)
                 continue
 
             sql = 'select * from ii_sehuatang where magnet_link like %s'
