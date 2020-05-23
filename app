@@ -32,8 +32,8 @@ def script_main(config: dict):
 
 def cli():
     parser = argparse.ArgumentParser()
-    parser.add_argument('craw', nargs='?', default='taotu')
-    parser.add_argument('action', nargs='?')
+    parser.add_argument('craw', nargs='?', default='')
+    parser.add_argument('action', nargs='?', default='')
     parser.add_argument('url', nargs='?')
     parser.add_argument('--start', type=int)
     parser.add_argument('--end', type=int)

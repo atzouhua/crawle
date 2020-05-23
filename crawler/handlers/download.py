@@ -20,7 +20,7 @@ class Download(BaseHandler):
         super().__init__()
         self.aria2 = aria2p.API(
             aria2p.Client(
-                host='http://localhost',
+                host='http://140.238.24.151',
                 port=6800,
                 secret=self.config.get('secret', '66a712e1d520b7fdc2db')
             )
@@ -41,7 +41,7 @@ class Download(BaseHandler):
                 continue
 
             if str(download.name).find('METADATA') != -1:
-                self.aria2.client.remove(download.gid)
+                self.aria2.remove([download])
                 continue
 
             sql = 'select * from ii_sehuatang where magnet_link like %s'
@@ -72,7 +72,7 @@ class Download(BaseHandler):
                 new_file = os.path.join(VIDEO_PATH, file_name, '.', ext)
                 os.system("mv '{}' {}".format(file, new_file))
 
-            self.aria2.client.remove(download.gid)
+            self.aria2.remove([download])
 
     def action_rclone(self):
         dest_path = 'pod78_gdrive:/gc/'

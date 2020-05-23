@@ -47,8 +47,8 @@ class TaoTu(BaseHandler):
 
         data = {'title': title, 'origin_title': origin_title, 'category': category, 'alias': '', 'url': task,
                 'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
-        print(data)
-        # self.save(data, i=args[0], n=args[1])
+        # print(data)
+        self.save(data, i=args[0], n=args[1])
 
     def get_download_link(self, doc):
         elements = doc('.pictext a')
