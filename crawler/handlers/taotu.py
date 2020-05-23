@@ -3,6 +3,7 @@ import re
 import pyquery
 
 from ..libs.base import BaseHandler
+from ..libs.common import r1
 
 
 class TaoTu(BaseHandler):
@@ -28,19 +29,26 @@ class TaoTu(BaseHandler):
         html = self.get_html(task)
         html = html.replace('</html>', '').replace('</body>', '')
         doc = pyquery.PyQuery(html)
-        title = doc('.breadnav a').eq(-1).text()
+        origin_title = doc('.breadnav a').eq(-1).text()
         download_link, pwd = self.get_download_link(doc)
-        number = ''
+        number = title = ''
+        category = r1(r'\[([^\]]+)\]', origin_title, 1, '')
+        if category and category.find('ROSI') != -1:
+            category = 'ROSI'
 
-        r = re.search(r'([a-zA-Z]+)\.(\d+)', title)
+        r = re.search(r'([a-zA-Z]+)\.(\d+)', origin_title)
         if r:
             number = r.group(2)
-            title = 'ROSI NO.{}'.format(number)
+            title = 'NO.{}'.format(number)
         status = 1 if download_link else 0
 
-        data = {'title': title, 'category': 'ROSI', 'alias': 'rosi', 'url': task,
+        if pwd:
+            pwd = pwd.replace('密码: ', '')
+
+        data = {'title': title, 'origin_title': origin_title, 'category': category, 'alias': '', 'url': task,
                 'download_link': download_link, 'status': status, 'number': number, 'pwd': pwd}
-        self.save(data, i=args[0], n=args[1])
+        print(data)
+        # self.save(data, i=args[0], n=args[1])
 
     def get_download_link(self, doc):
         elements = doc('.pictext a')
@@ -65,10 +73,10 @@ class TaoTu(BaseHandler):
 
     def get_download_link_by_bd(self, url):
         doc = self.doc(url)
+        if doc.html().find('百度盘[封号]') != -1:
+            return '', ''
         element = doc('table.td_line td')
         pwd = element.eq(7).text()
-        if pwd:
-            pwd.replace('密码: ', '')
         download_element = element.eq(9)
         download_link = download_element('a').attr('href')
         return download_link, pwd

@@ -31,6 +31,7 @@ class Download(BaseHandler):
         data = DB.all(sql)
         for item in data:
             download = self.aria2.add_magnet(item['magnet_link'])
+            DB.update('ii_sehuatang', {'status': 2}, 'id = {}'.format(item['id']))
             print(download.status)
 
     def action_print(self):
@@ -46,6 +47,8 @@ class Download(BaseHandler):
             data = DB.one(sql, ('%{}%'.format(download.info_hash),))
             if not data:
                 continue
+
+            DB.update('ii_sehuatang', {'status': 3}, 'id = {}'.format(data['id']))
 
             result = []
             for file in download.files:
@@ -67,3 +70,12 @@ class Download(BaseHandler):
                 ext = file.split('.')[-1]
                 new_file = os.path.join(VIDEO_PATH, file_name, '.', ext)
                 os.system("mv '{}' {}".format(file, new_file))
+
+            self.aria2.client.remove(download.gid)
+
+    def action_rclone(self):
+        dest_path = 'pod78_gdrive:/gc/'
+        _cmd = 'nohup rclone move --max-age 24h --no-traverse {}/ {} > /root/rclone.log 2>&1 &'.format(VIDEO_PATH,
+                                                                                                       dest_path)
+        print(_cmd)
+        # os.system('nohup rclone move --max-age 24h --no-traverse {}/ {} > /root/rclone.log 2>&1 &'.format(VIDEO_PATH, dest_path))
