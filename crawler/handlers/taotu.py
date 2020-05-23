@@ -26,6 +26,10 @@ class TaoTu(BaseHandler):
         if type(task) == dict:
             task = task.get('url')
 
+        if task.find('gq/huizhan') != -1 or task.find('gq/dm') != -1 or task.find('gq/car/') != -1 or task.find(
+                'gq/chinajoy') != -1:
+            return None
+
         html = self.get_html(task)
         html = html.replace('</html>', '').replace('</body>', '')
         doc = pyquery.PyQuery(html)
