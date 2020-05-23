@@ -34,6 +34,11 @@ class Download(BaseHandler):
             DB.update('ii_sehuatang', {'status': 2}, 'id = {}'.format(item['id']))
             print(download.status)
 
+    def action_debug(self):
+        downloads = self.aria2.get_downloads()
+        for download in downloads:
+            print(download.name, download.status)
+
     def action_print(self):
         downloads = self.aria2.get_downloads()
         for download in downloads:
