@@ -22,6 +22,11 @@ class SouSi(BaseHandler):
         self.table = 'ii_sousi'
 
     def detail_handler(self, task, *args):
+        if type(task) == dict:
+            task = task.get('url')
+        if task.find('plus/') != -1:
+            return None
+
         data = super().detail_handler(task, *args)
         doc = data.get('doc')
 
