@@ -13,12 +13,12 @@ class CtFile:
         self.base_url = 'https://474b.com'
         self.request = requests.session()
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36',
+            'Cookie': 'ua_checkmutilogin=RkEwN9WFjj; pubcookie=AmYGMQw0BWdWZgdgVzBVOFYNUmoBXVxoUHQCNwVmBmoCMQBBVDwAMFE5UGsEZVA9UzcALg85BTxQCVBrBG9dPgI_BjQMMwViVmIHWldjVXpWYlI7AThcblBAAjUFagZrAjsAN1RuAGNRelBnBD1QAlMwADUPYwViUDNQNAQ4XWgCZwYzDAkFYVZjB2NXYVVoVjZSYgFkXGlQOAJiBWkGMgJmAGRUPgBmUWVQMgRiUG5TNQA0D20FYVBhUDMEbV1oAjYGYwxi; ct_uid=5c3a2199da40a72de0d3599c55d5799c'
         }
         self.download_api = 'https://webapi.ctfile.com/get_file_url.php?uid={}&fid={}&folder_id=0&file_chk={}&mb=0&app=0&acheck=1&verifycode=&rd={}'
 
     def download(self, url):
-        url = 'http://www.400gb.com/file/80638823'
         url = url.replace('http:', 'https:')
         print('[+]: start downloading... %s' % url)
         response = self.fetch(url, allow_redirects=False)
@@ -38,13 +38,27 @@ class CtFile:
         wget_cmd = "wget -O %s '%s'" % (title, data['downurl'])
         print(wget_cmd)
 
-        data = {
-            'append': 'list-home',
-            'paged': 1000,
-            'action': 'ajax_load_posts',
-            'page': 'home'
-        }
-        response = self.fetch('https://www.vmgirls.com/wp-admin/admin-ajax.php', data=data)
+        # data = {
+        #     'append': 'list-home',
+        #     'paged': 1000,
+        #     'action': 'ajax_load_posts',
+        #     'page': 'home'
+        # }
+        # response = self.fetch('https://www.vmgirls.com/wp-admin/admin-ajax.php', data=data)
+        # print(response.text)
+
+    def download_vip(self, url):
+        url = url.replace('http:', 'https:')
+        if not re.search(r'(\d+)-(\d+)', url):
+            response = self.fetch(url, allow_redirects=False)
+            if response.status_code == 302:
+                url = response.headers['location']
+        file_id = url.split('/')[-1]
+        self.headers['Referer'] = url
+        self.headers['Origin'] = 'https://545c.com'
+        api = 'https://webapi.ctfile.com/getfile.php?f={}&passcode=&r={}&ref='.format(file_id, random.random())
+        response = self.fetch(api)
+        data = json.loads(response.text)
         print(response.text)
 
     def fetch(self, url, data=None, **kwargs):
@@ -71,4 +85,4 @@ class CtFile:
 
 if __name__ == '__main__':
     obj = CtFile()
-    obj.download('https://474b.com/file/1801582-440521095')
+    obj.download_vip('http://www.400gb.com/file/101137189')

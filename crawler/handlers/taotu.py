@@ -35,6 +35,9 @@ class TaoTu(BaseHandler):
         doc = pyquery.PyQuery(html)
 
         origin_title = doc('.breadnav a').eq(-1).text()
+        if origin_title.find('近期网站一些调整说明') != -1:
+            return None
+
         download_link, pwd = self.get_download_link(doc)
         number = title = ''
         category = r1(r'\[([^\]]+)\]', origin_title, 1, '')
