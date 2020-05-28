@@ -58,7 +58,9 @@ class BaseHandler:
         if not n:
             self.logger.warning('empty url list.')
             return
+        self.after_index(url_list)
 
+    def after_index(self, url_list):
         tasks = self.crawl(url_list, self.page_handler)
         task_count = len(tasks)
         self.logger.info(f'task count: {task_count}')

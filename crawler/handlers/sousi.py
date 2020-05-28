@@ -3,6 +3,7 @@ from urllib import parse
 
 from ..libs.base import BaseHandler
 from ..libs.common import r2, r1
+from ..libs.db import DB
 
 
 class SouSi(BaseHandler):
@@ -20,6 +21,12 @@ class SouSi(BaseHandler):
         }
         self.charset = 'gbk'
         self.table = 'ii_sousi'
+
+    def action_download(self):
+        sql = 'select * from {} where status = 1 order by id desc limit 5'.format(self.table)
+        data = DB.all(sql)
+        for item in data:
+            pass
 
     def detail_handler(self, task, *args):
         if type(task) == dict:

@@ -19,14 +19,18 @@ class MkZhan(BaseHandler):
             'base_url': self.base_url
         }
 
-    def action_update(self, **kwargs):
+    def action_update(self):
         self.is_update = True
         self.rule['page_rule'] = {'list': ".update-list.active .common-comic-item .comic__title a"}
         _url = format_url('/update', self.base_url)
-        kwargs.setdefault('i', 1)
-        kwargs.setdefault('n', 1)
-        result = self._index_handler(_url, **kwargs)
+        result = self.page_handler(_url, 1, 1)
         self.after_index(result)
+
+    def action_banner(self):
+        doc = self.doc(self.base_url)
+        elements = doc('.in-banner img')
+        for element in elements.items():
+            print(element.attr('data-src'))
 
     def detail_handler(self, task, *args):
         doc = self.doc(task)
