@@ -90,7 +90,7 @@ class MkZhan(BaseHandler):
                 book_items = book_items[0:3]
                 thread_num = 3
 
-            item_result = self.crawl(book_items, self.item_handler, thread_num, chunk_size=thread_num)
+            item_result = self.crawl(book_items, self.item_handler, thread_num, chunk_size=10)
             if item_result and len(item_result):
                 params['last_item'] = item_result[-1].get('name')
                 params['items'] = json.dumps(item_result, ensure_ascii=False)

@@ -82,12 +82,15 @@ class BaseHandler:
         if not chunk_size:
             chunk_size = min(10, int(n / 5))
         with futures.ThreadPoolExecutor(thread_num) as executor:
-            for num, result in zip(tasks, executor.map(task_handler, tasks, args, args2, chunksize=chunk_size)):
-                if result:
-                    if type(result) == list:
-                        result_list.extend(result)
-                    else:
-                        result_list.append(result)
+            try:
+                for num, result in zip(tasks, executor.map(task_handler, tasks, args, args2, chunksize=chunk_size)):
+                    if result:
+                        if type(result) == list:
+                            result_list.extend(result)
+                        else:
+                            result_list.append(result)
+            except Exception as e:
+                self.logger.exception(e)
         return result_list
 
     def crawl2(self, tasks: list, fn, callback=None, **kwargs):
@@ -123,21 +126,24 @@ class BaseHandler:
         kwargs.setdefault('headers', self.headers)
         if not session:
             session = self.session
-        ex = None
+
         if data:
             method = 'POST'
 
+        response = None
+        ex = None
         for i in range(3):
             try:
                 response = session.request(method, url, data=data, **kwargs)
                 response.encoding = self.charset
-                if callback:
-                    return response
-                return response.text
+                if response.ok:
+                    if callback:
+                        return response
+                    return response.text
             except Exception as e:
                 ex = e
-                time.sleep(1)
-        raise ex
+                time.sleep(2)
+        raise Exception(url, response if response else ex)
 
     def doc(self, url, method='GET', session=None, **kwargs):
         if type(url) == dict:
