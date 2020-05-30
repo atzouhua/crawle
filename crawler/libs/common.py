@@ -67,3 +67,25 @@ def r2(pattern, text, repl=''):
     if not text:
         return None
     return re.sub(pattern, repl, text, re.IGNORECASE | re.DOTALL).strip()
+
+
+def get_item_name(origin_name: str) -> str:
+    if r1(r'通知|付费|梦想|连更|公告|预热活动', origin_name, 0):
+        return ''
+    if r1(r'^第[\d]+话$', origin_name, 0):
+        return ''
+    new_name = r1(r'第[\d]+话(.+)', origin_name, 1)
+    if new_name:
+        return new_name
+    new_name = r1('^[0-9]*$', origin_name, 0)
+    if new_name:
+        return ''
+    return origin_name
+
+
+def format_view(views):
+    if views.find('亿') != -1:
+        views = float(views.replace('亿', '')) * 100000000 / 100
+    elif views.find('万') != -1:
+        views = float(views.replace('万', '')) * 10000 / 100
+    return int(views)

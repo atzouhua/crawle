@@ -68,6 +68,9 @@ class BaseHandler:
         if task_count:
             self.crawl(tasks, self.detail_handler)
 
+    def action_post(self):
+        self.crawl([self.config.get('url')], self.detail_handler)
+
     def crawl(self, tasks: list, task_handler, thread_num=5):
         tasks.reverse()
         result_list = []
@@ -86,18 +89,19 @@ class BaseHandler:
                         result_list.append(result)
         return result_list
 
-    def get_html(self, url, method='GET', data=None, callback=None, **kwargs):
+    def get_html(self, url, method='GET', data=None, session=None, callback=None, **kwargs):
         kwargs.setdefault('timeout', 10)
         kwargs.setdefault('proxies', self.proxies)
         kwargs.setdefault('headers', self.headers)
-        # kwargs.setdefault('verify', False)
+        if not session:
+            session = self.session
         ex = None
         if data:
             method = 'POST'
 
         for i in range(3):
             try:
-                response = self.session.request(method, url, data=data, **kwargs)
+                response = session.request(method, url, data=data, **kwargs)
                 response.encoding = self.charset
                 if callback:
                     return response
@@ -107,10 +111,19 @@ class BaseHandler:
                 time.sleep(1)
         raise ex
 
-    def doc(self, url, method='GET', **kwargs):
+    def doc(self, url, method='GET', session=None, **kwargs):
         if type(url) == dict:
             url = url.get('url')
-        return pyquery.PyQuery(self.get_html(url, method, None, **kwargs))
+        return pyquery.PyQuery(self.get_html(url, method, session=session, **kwargs))
+
+    def get_new_request_session(self):
+        sess = requests.session()
+        sess.headers = self.headers
+        sess.mount('https://',
+                   HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 70))
+        sess.mount('http://',
+                   HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 70))
+        return sess
 
     def page_handler(self, task, *args):
         title_rule = self.page_rule.get('title')
@@ -156,11 +169,6 @@ class BaseHandler:
 
     def processing(self, i, n, message):
         self.logger.info(f"[{i}/{n}]:{message}")
-
-    def on_result(self, future):
-        result = future.result()
-        result_info = result[1]
-        self.processing(result_info['i'], result_info['n'], result[0]['title'])
 
     def save(self, params, message=None, db_save=True, **kwargs):
         if not message:
