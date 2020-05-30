@@ -57,6 +57,7 @@ class MkZhan(BaseHandler):
         book = self._get_book_params(doc)
         try:
             res = self.get_html(format_url('/api/post-save', self.publish_url), data=book, session=self.publish_session)
+            res = json.loads(res)
             self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res['msg']))
             return book
         except Exception as e:
