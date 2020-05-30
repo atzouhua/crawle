@@ -57,7 +57,7 @@ class MkZhan(BaseHandler):
         book = self._get_book_params(doc)
         try:
             res = self.get_html(format_url('/api/post-save', self.publish_url), data=book, session=self.publish_session)
-            self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res))
+            self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res['msg']))
             return book
         except Exception as e:
             self.logger.exception(e)
@@ -99,7 +99,7 @@ class MkZhan(BaseHandler):
                 book_items = book_items[0:3]
                 thread_num = 3
 
-            item_result = self.crawl(book_items, self.item_handler, thread_num=thread_num, chunk_size=2)
+            item_result = self.crawl(book_items, self.item_handler, thread_num=thread_num, chunk_size=10)
             if item_result and len(item_result):
                 params['last_item'] = item_result[-1].get('name')
                 params['items'] = json.dumps(item_result, ensure_ascii=False)
