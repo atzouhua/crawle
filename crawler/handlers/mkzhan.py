@@ -55,15 +55,12 @@ class MkZhan(BaseHandler):
     def detail_handler(self, task, *args):
         doc = self.doc(task)
         book = self._get_book_params(doc)
-        ex = None
-        for i in range(3):
-            try:
-                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book)
-                self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res))
-                return book
-            except Exception as e:
-                ex = e
-        self.logger.error(task, ex)
+        try:
+            res = self.get_html(format_url('/api/post-save', self.publish_url), data=book, session=self.publish_session)
+            self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res))
+            return book
+        except Exception as e:
+            self.logger.exception(e)
 
     def _get_book_params(self, doc):
         _container = doc('.de-container')
