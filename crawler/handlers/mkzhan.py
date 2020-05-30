@@ -1,6 +1,8 @@
 import json
 import random
 
+import requests
+
 from ..libs.base import BaseHandler
 from ..libs.common import format_url, get_item_name, format_view
 
@@ -24,7 +26,9 @@ class MkZhan(BaseHandler):
             self.publish_url = 'http://www.hahamh.net'
 
     def before_run(self):
-        self.proxies = None
+        publish_url = self.config.get('publish')
+        if publish_url:
+            self.publish_url = publish_url
 
     def action_update(self):
         self.is_update = True
@@ -49,9 +53,16 @@ class MkZhan(BaseHandler):
     def detail_handler(self, task, *args):
         doc = self.doc(task)
         book = self._get_book_params(doc)
-        res = self.get_html(format_url('/api/post-save', self.publish_url), data=book)
-        self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res))
-        return book
+        ex = None
+        for i in range(3):
+            try:
+                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book,
+                                    session=requests.session())
+                self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res))
+                return book
+            except Exception as e:
+                ex = e
+        self.logger.error(task, ex)
 
     def _get_book_params(self, doc):
         _container = doc('.de-container')
