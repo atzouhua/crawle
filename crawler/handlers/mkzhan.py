@@ -22,10 +22,12 @@ class MkZhan(BaseHandler):
             'post_rule': {},
             'base_url': self.base_url
         }
+        self.publish_session = requests.session()
+
+    def before_run(self):
         if not self.proxies:
             self.publish_url = 'http://www.hahamh.net'
 
-    def before_run(self):
         publish_url = self.config.get('publish')
         if publish_url:
             self.publish_url = publish_url
@@ -56,8 +58,7 @@ class MkZhan(BaseHandler):
         ex = None
         for i in range(3):
             try:
-                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book,
-                                    session=requests.session())
+                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book)
                 self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res))
                 return book
             except Exception as e:
@@ -101,13 +102,13 @@ class MkZhan(BaseHandler):
                 book_items = book_items[0:3]
                 thread_num = 3
 
-            item_result = self.crawl(book_items, self.item_handler, thread_num, chunk_size=10)
+            item_result = self.crawl(book_items, self.item_handler, thread_num=thread_num, chunk_size=2)
             if item_result and len(item_result):
                 params['last_item'] = item_result[-1].get('name')
                 params['items'] = json.dumps(item_result, ensure_ascii=False)
         return params
 
-    def item_handler(self, task, *args):
+    def item_handler(self, task, *args, **kwargs):
         doc = self.doc(task)
         elements = doc('.rd-article-wr .rd-article__pic img')
         item_name = doc('.last-crumb').text()
