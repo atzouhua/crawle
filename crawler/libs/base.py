@@ -71,7 +71,7 @@ class BaseHandler:
     def action_post(self):
         self.crawl([self.config.get('url')], self.detail_handler)
 
-    def crawl(self, tasks: list, task_handler, thread_num=5):
+    def crawl(self, tasks: list, task_handler, thread_num=5, chunk_size=None):
         tasks.reverse()
         result_list = []
         n = len(tasks)
@@ -79,7 +79,8 @@ class BaseHandler:
         args = [i for i in range(1, n + 1)]
         args2 = [n for i in range(1, n + 1)]
 
-        chunk_size = min(10, int(n / 5))
+        if not chunk_size:
+            chunk_size = min(10, int(n / 5))
         with futures.ThreadPoolExecutor(thread_num) as executor:
             for num, result in zip(tasks, executor.map(task_handler, tasks, args, args2, chunksize=chunk_size)):
                 if result:
@@ -87,6 +88,33 @@ class BaseHandler:
                         result_list.extend(result)
                     else:
                         result_list.append(result)
+        return result_list
+
+    def crawl2(self, tasks: list, fn, callback=None, **kwargs):
+        tasks.reverse()
+        n = len(tasks)
+        thread_num = self.config.get('thread_num', kwargs.get('thread_num', 5))
+
+        result_list = []
+        with futures.ThreadPoolExecutor(thread_num) as executor:
+            for i, task in enumerate(tasks):
+                i += 1
+                if type(task) == dict and task.get('url'):
+                    kwargs.update(task)
+                    task = task.get('url')
+                try:
+                    future = executor.submit(fn, task, i=i, n=n, **kwargs)
+                    if callback:
+                        future.add_done_callback(callback)
+                    else:
+                        result = future.result()
+                        if result:
+                            if type(result) == list:
+                                result_list.extend(result)
+                            elif type(result) == dict:
+                                result_list.append(result)
+                except Exception as e:
+                    self.logger.exception(e)
         return result_list
 
     def get_html(self, url, method='GET', data=None, session=None, callback=None, **kwargs):
@@ -115,15 +143,6 @@ class BaseHandler:
         if type(url) == dict:
             url = url.get('url')
         return pyquery.PyQuery(self.get_html(url, method, session=session, **kwargs))
-
-    def get_new_request_session(self):
-        sess = requests.session()
-        sess.headers = self.headers
-        sess.mount('https://',
-                   HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 70))
-        sess.mount('http://',
-                   HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 70))
-        return sess
 
     def page_handler(self, task, *args):
         title_rule = self.page_rule.get('title')

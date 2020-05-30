@@ -90,15 +90,14 @@ class MkZhan(BaseHandler):
                 book_items = book_items[0:3]
                 thread_num = 3
 
-            self.sess = self.get_new_request_session()
-            item_result = self.crawl(book_items, self.item_handler, thread_num)
+            item_result = self.crawl(book_items, self.item_handler, thread_num, chunk_size=thread_num)
             if item_result and len(item_result):
                 params['last_item'] = item_result[-1].get('name')
                 params['items'] = json.dumps(item_result, ensure_ascii=False)
         return params
 
     def item_handler(self, task, *args):
-        doc = self.doc(task, session=self.sess)
+        doc = self.doc(task)
         elements = doc('.rd-article-wr .rd-article__pic img')
         item_name = doc('.last-crumb').text()
         item_name = get_item_name(item_name).replace('“', '').replace('”', '')
