@@ -110,9 +110,12 @@ class MkZhan(BaseHandler):
         doc = self.doc(task)
         elements = doc('.rd-article-wr .rd-article__pic img')
         item_name = doc('.last-crumb').text()
-        item_name = get_item_name(item_name).replace('“', '').replace('”', '')
+        item_name = get_item_name(item_name)
         if item_name is None:
             return None
+
+        if item_name:
+            item_name = item_name.replace('“', '').replace('”', '')
 
         images = []
         for element in elements.items():
