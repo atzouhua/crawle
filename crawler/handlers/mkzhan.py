@@ -26,7 +26,7 @@ class MkZhan(BaseHandler):
 
     def before_run(self):
         if not self.proxies:
-            self.publish_url = 'https://api.hahamh.net'
+            self.publish_url = 'https://api.mh01.net'
 
         publish_url = self.config.get('publish')
         if publish_url:
