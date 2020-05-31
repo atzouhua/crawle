@@ -16,7 +16,7 @@ class MkZhan(BaseHandler):
         self.is_update = False
         self.rule = {
             'page_url': '/category/?page=%page',
-            'end_page': 5,
+            'end_page': 1,
             'start_page': 1,
             'page_rule': {'list': '.common-comic-item .comic__title a'},
             'post_rule': {},
@@ -26,7 +26,7 @@ class MkZhan(BaseHandler):
 
     def before_run(self):
         if not self.proxies:
-            self.publish_url = 'http://www.hahamh.net'
+            self.publish_url = 'https://api.hahamh.net'
 
         publish_url = self.config.get('publish')
         if publish_url:
