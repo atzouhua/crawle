@@ -80,7 +80,7 @@ class BaseHandler:
         args2 = [n for i in range(1, n + 1)]
 
         if not chunk_size:
-            chunk_size = min(10, int(n / 5))
+            chunk_size = min(15, int(n / 5))
         with futures.ThreadPoolExecutor(thread_num) as executor:
             try:
                 for num, result in zip(tasks, executor.map(task_handler, tasks, args, args2, chunksize=chunk_size)):

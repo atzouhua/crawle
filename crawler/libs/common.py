@@ -69,9 +69,9 @@ def r2(pattern, text, repl=''):
     return re.sub(pattern, repl, text, re.IGNORECASE | re.DOTALL).strip()
 
 
-def get_item_name(origin_name: str) -> str:
+def get_item_name(origin_name: str):
     if r1(r'通知|付费|梦想|连更|公告|预热活动', origin_name, 0):
-        return ''
+        return None
     if r1(r'^第[\d]+话$', origin_name, 0):
         return ''
     new_name = r1(r'第[\d]+话(.+)', origin_name, 1)
