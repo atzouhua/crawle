@@ -36,8 +36,8 @@ class MkZhan(BaseHandler):
         self.is_update = True
         self.rule['page_rule'] = {'list': ".update-list.active .common-comic-item .comic__title a"}
         _url = format_url('/update', self.base_url)
-        # result = self.page_handler(_url, 1, 1)
-        self.crawl(['https://www.mkzhan.com/212469'], self.detail_handler)
+        result = self.page_handler(_url, 1, 1)
+        self.crawl(result, self.detail_handler)
 
     def action_banner(self):
         doc = self.doc(self.base_url)
