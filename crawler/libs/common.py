@@ -72,14 +72,14 @@ def r2(pattern, text, repl=''):
 def get_item_name(origin_name: str):
     if r1(r'通知|付费|梦想|连更|公告|预热活动', origin_name, 0):
         return None
-    if r1(r'^第[\d]+话$', origin_name, 0):
-        return ''
-    new_name = r1(r'第[\d]+话(.+)', origin_name, 1)
-    if new_name:
-        return new_name
-    new_name = r1('^[0-9]*$', origin_name, 0)
-    if new_name:
-        return ''
+    # if r1(r'^第[\d]+话$', origin_name, 0):
+    #     return ''
+    # new_name = r1(r'第[\d]+话(.+)', origin_name, 1)
+    # if new_name:
+    #     return new_name
+    # new_name = r1('^[0-9]*$', origin_name, 0)
+    # if new_name:
+    #     return ''
     return origin_name
 
 
