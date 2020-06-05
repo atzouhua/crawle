@@ -37,28 +37,24 @@ class BaseHandler:
         self.table = ''
         self.lock = threading.Lock()
 
-    def before_run(self):
+    def action_before(self):
         pass
 
-    def after_run(self):
+    def action_after(self):
         if len(self.result):
             DB.insert_all(self.table, self.result)
             self.result = []
         self.process_time()
 
-    def run(self):
-        _action = 'action_{}'.format(self.config.get('action', 'index'))
-        if hasattr(self, _action):
-            func = getattr(self, _action)
-            func()
-
     def action_index(self):
-        url_list = self.get_index_url_list()
-        n = len(url_list)
-        if not n:
-            self.logger.warning('empty url list.')
-            return
-        self.after_index(url_list)
+        pass
+        # url_list = self.get_index_url_list()
+        # n = len(url_list)
+        # if not n:
+        #     self.logger.warning('empty url list.')
+        #     return
+        # print(url_list)
+        # self.after_index(url_list)
 
     def after_index(self, url_list):
         tasks = self.crawl(url_list, self.page_handler)

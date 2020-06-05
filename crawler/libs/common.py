@@ -1,7 +1,9 @@
 import hashlib
+import inspect
 import os
 import re
 import socket
+from importlib import import_module
 from os.path import dirname, realpath
 
 from progress.bar import Bar
@@ -81,6 +83,18 @@ def get_item_name(origin_name: str):
     # if new_name:
     #     return ''
     return origin_name
+
+
+def run_handler(module_name, action, **kwargs):
+    module = import_module('.'.join(['crawler', 'handlers', module_name]))
+    for name, obj in inspect.getmembers(module):
+        if inspect.isclass(obj) and obj.__bases__[0].__name__ == 'BaseHandler':
+            instance = obj()
+            instance.config = kwargs
+            getattr(instance, f'action_before')()
+            getattr(instance, f'action_{action}')()
+            getattr(instance, f'action_after')()
+            break
 
 
 def format_view(views):

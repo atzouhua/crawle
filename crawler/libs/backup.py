@@ -2,14 +2,13 @@
 import os
 import time
 
-from oss import Oss
 
 day = time.strftime("%Y-%m-%d-%H", time.localtime())
 
 MySQL_Dump = '/usr/local/mysql/bin/mysqldump'
 MYSQL_UserName = 'root'
 MYSQL_PassWord = 'hack3321'
-MYSQL_Database = 'hahan'
+MYSQL_Database = 'hahamh'
 Backup_Home = '/home/backup/'
 if not os.path.isdir(Backup_Home):
     os.makedirs(Backup_Home)
