@@ -1,7 +1,7 @@
 import re
 from urllib import parse
 
-from ..libs.base import BaseHandler
+from ..libs.base_handler import BaseHandler
 from ..libs.common import r2, r1
 from ..libs.db import DB
 

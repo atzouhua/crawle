@@ -3,7 +3,7 @@ import random
 
 import requests
 
-from ..libs.base import BaseHandler
+from ..libs.base_handler import BaseHandler
 from ..libs.common import format_url, get_item_name, format_view
 
 
