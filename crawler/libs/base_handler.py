@@ -2,10 +2,8 @@ import logging
 import threading
 import time
 
-import pyquery
-
 from .base_crawle import BaseCrawler
-from .common import format_url, get_page_url_list, run_crawl
+from .common import format_url, get_page_url_list
 from .db import DB
 
 
@@ -22,7 +20,7 @@ class BaseHandler(BaseCrawler):
         self.lock = threading.Lock()
 
     def action_before(self):
-        pass
+        self.config.update(self.rule)
 
     def action_after(self):
         if len(self.result):
@@ -31,17 +29,18 @@ class BaseHandler(BaseCrawler):
         self.process_time()
 
     def action_index(self):
-        url_list = get_page_url_list()
+        url_list = get_page_url_list(**self.config)
         n = len(url_list)
         if not n:
             self.logger.warning('empty url list.')
             return
 
-        tasks = self.crawl(url_list, self.page_handler)
-        task_count = len(tasks)
-        self.logger.info(f'task count: {task_count}')
-        if task_count:
-            self.crawl(tasks, self.detail_handler)
+        print(url_list)
+        # tasks = self.crawl(url_list, self.page_handler)
+        # task_count = len(tasks)
+        # self.logger.info(f'task count: {task_count}')
+        # if task_count:
+        #     self.crawl(tasks, self.detail_handler)
 
     def action_detail(self):
         self.crawl([self.config.get('url')], self.detail_handler)
