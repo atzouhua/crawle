@@ -87,6 +87,10 @@ def get_item_name(origin_name: str):
 
 
 def run_handler(module_name, action, **kwargs):
+    for key in list(kwargs.keys()):
+        if not kwargs.get(key):
+            del kwargs[key]
+
     module = import_module('.'.join(['crawler', 'handlers', module_name]))
     for name, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and obj.__bases__[0].__name__ == 'BaseHandler':
@@ -98,33 +102,6 @@ def run_handler(module_name, action, **kwargs):
             break
 
 
-def crawl_submit(tasks: list, fn, callback=None, **kwargs):
-    tasks.reverse()
-    n = len(tasks)
-    thread_num = kwargs.get('thread_num') or 10
-
-    result_list = []
-    with futures.ThreadPoolExecutor(thread_num) as executor:
-        for i, task in enumerate(tasks):
-            i += 1
-            if type(task) == dict and task.get('url'):
-                kwargs.update(task)
-                task = task.get('url')
-            future = executor.submit(fn, task, i=i, n=n, **kwargs)
-            if callback:
-                future.add_done_callback(callback)
-                continue
-
-            result = future.result()
-            if result:
-                if type(result) == list:
-                    result_list.extend(result)
-                else:
-                    result_list.append(result)
-
-    return result_list
-
-
 def get_page_url_list(**kwargs):
     tasks = []
     page_url = kwargs.get('url') or kwargs.get('page_url')
@@ -134,7 +111,7 @@ def get_page_url_list(**kwargs):
     end_page = kwargs.get('end_page') or 1
 
     if end_page < start_page:
-        end_page = start_page + 1
+        end_page = start_page
 
     for i in range(start_page, end_page + 1):
         url = page_url.replace('%page', str(i))

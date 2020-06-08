@@ -20,7 +20,8 @@ class BaseHandler(BaseCrawler):
         self.lock = threading.Lock()
 
     def action_before(self):
-        self.config.update(self.rule)
+        self.rule.update(self.config)
+        self.config = self.rule
 
     def action_after(self):
         if len(self.result):
@@ -35,12 +36,11 @@ class BaseHandler(BaseCrawler):
             self.logger.warning('empty url list.')
             return
 
-        print(url_list)
-        # tasks = self.crawl(url_list, self.page_handler)
-        # task_count = len(tasks)
-        # self.logger.info(f'task count: {task_count}')
-        # if task_count:
-        #     self.crawl(tasks, self.detail_handler)
+        tasks = self.crawl(url_list, self.page_handler)
+        task_count = len(tasks)
+        self.logger.info(f'task count: {task_count}')
+        if task_count:
+            self.crawl(tasks, self.detail_handler)
 
     def action_detail(self):
         self.crawl([self.config.get('url')], self.detail_handler)
@@ -107,8 +107,8 @@ class BaseHandler(BaseCrawler):
 
     @property
     def post_rule(self):
-        return self.rule.get('post_rule')
+        return self.config.get('post_rule')
 
     @property
     def page_rule(self):
-        return self.rule.get('page_rule')
+        return self.config.get('page_rule')
