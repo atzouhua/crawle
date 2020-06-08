@@ -28,7 +28,7 @@ class SouSi(BaseHandler):
 
     def detail_handler(self, task, *args):
         data = super().detail_handler(task, *args)
-        if data.get('url').find('plus/') != -1:
+        if not data or data.get('url').find('plus/') != -1:
             return None
 
         doc = data.get('doc')

@@ -83,6 +83,7 @@ class BaseHandler(BaseCrawler):
             return data
         except Exception as e:
             logging.error(e)
+            return None
 
     def process_time(self):
         self.logger.info("process time {:.2f}s".format(time.perf_counter() - self.begin_tme))
