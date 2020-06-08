@@ -85,6 +85,6 @@ def _find_down_link(link_list):
             return link
 
         if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1 or link.find(
-                't00y') != -1:
+                't00y') != -1 or link.find('bego.cc') != -1:
             return link
     return ''

@@ -82,7 +82,7 @@ class BaseHandler(BaseCrawler):
             data.setdefault('url', task)
             return data
         except Exception as e:
-            logging.exception(e)
+            logging.error(e)
 
     def process_time(self):
         self.logger.info("process time {:.2f}s".format(time.perf_counter() - self.begin_tme))
