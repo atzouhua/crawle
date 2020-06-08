@@ -20,15 +20,10 @@ class SouSi(BaseHandler):
         self.charset = 'gbk'
         self.table = 'ii_sousi'
 
-    def action_download(self):
-        sql = 'select * from {} where status = 1 order by id desc limit 5'.format(self.table)
-        data = DB.all(sql)
-        for item in data:
-            pass
-
     def detail_handler(self, task, *args):
         data = super().detail_handler(task, *args)
         if not data or data.get('url').find('plus/') != -1:
+            self.logger.error(task)
             return None
 
         doc = data.get('doc')
