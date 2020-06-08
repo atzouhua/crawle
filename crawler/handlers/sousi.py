@@ -55,7 +55,7 @@ class SouSi(BaseHandler):
             'pwd': pwd,
             'url': url,
             'status': status,
-            'number': r1(r'([a-zA-Z]+)\.(\d+)', title, 2)
+            'number': r1(r'([a-zA-Z]+)\.(\d+)', title, 2, '')
         }
 
 
