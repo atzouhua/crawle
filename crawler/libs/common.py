@@ -66,6 +66,17 @@ def r1(pattern, text, group=1, default=None):
     return default
 
 
+def r3(pattern, text, group=1, default=None):
+    if not text or type(text) != str:
+        return default
+
+    m = re.search(pattern, text, re.IGNORECASE)
+    groups = m.groups()
+    if groups:
+        return groups[group]
+    return default
+
+
 def r2(pattern, text, repl='', default=None):
     if not text:
         return default
