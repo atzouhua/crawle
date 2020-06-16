@@ -29,7 +29,7 @@ def cli(ctx, **kwargs):
 
 
 @cli.command()
-@click.option('--url', type=str, required=True, default='')
+@click.option('--url', type=str, required=True, default='http://www.sosi55.com/guochantaotu/3Agirl/2014/0328/19508.html')
 @click.pass_context
 def detail(ctx, **kwargs):
     _run(ctx, 'detail', **kwargs)

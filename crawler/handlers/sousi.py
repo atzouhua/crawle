@@ -46,18 +46,15 @@ class SouSi(BaseHandler):
             return None
 
         title = r2(r'\[[^\]]+\]|期|匿名写真|泰国旅拍合集|第二套|大理旅拍|第一刊|青春少女—|第四刊|越南芽庄|第三刊|三亚旅拍猩一|模特合集|动感之星|ShowTimeDancer', title)
-        title = r2(r'\[[^\s]*|官网原图|原创写真|如壹写真|新模试镜|模特|（|）|上海|套图|一|二|三|原版|爱尤物专辑|高清重置|_', title)
-        star = r1(r'((VOL|NO)\.\d+)([^[]+)', title, 3, '')
+        title = r2(r'\[[^\s]*|官网原图|原创写真|如壹写真|新模试镜|模特|（|）|上海|套图|一|二|三|原版|爱尤物专辑|高清重置|_|-|ROSI.CC|DISI.CC', title)
+        title = r2(r'\.上|\.中|\.下|\+|经典001|MB|TuiGirl|第四印象', title)
+        star = r1(r'MODEL(.*)|NO\.\d+(.*)|vol\.\d+(.*)', title, 1, '')
+        print(star)
         if not star:
             star = title.split(' ')[-1]
 
         if star and star.find('：') != -1:
             star = star.split('：')[-1]
-
-        if star and star.find('家庭教师') != -1 or star.lower().find('no') != -1 or star.lower().find(
-                'Vol') != -1 or star.find(
-            '[') != -1 or star.find('合辑') != -1 or star.find('刊') != -1 or len(star) == 1:
-            star = ''
 
         alias = r1(r'[a-zA-Z0-9]+', _find[0], 0)
         category = r2(r'写真|\[|\]', _find[0])
@@ -95,7 +92,7 @@ class SouSi(BaseHandler):
         return {
             'title': title.upper().strip(),
             'alias': alias.lower().strip(),
-            'star': r2('套图|（二）|（一）|年费视频|黑网美腿|(一)|(二)', star, '', ''),
+            'star': r2('套图|（二）|（一）|年费视频|黑网美腿|(一)|(二)|MODEL|车展|推女郎未流出版权图|第四印象|美缓馆', star, '', ''),
             'category': category,
             'download_link': down_link,
             'pwd': pwd,

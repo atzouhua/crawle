@@ -62,7 +62,7 @@ def r1(pattern, text, group=1, default=None):
 
     m = re.search(pattern, text, re.IGNORECASE)
     if m:
-        return m.group(group).strip()
+        return m.group(group)
     return default
 
 
