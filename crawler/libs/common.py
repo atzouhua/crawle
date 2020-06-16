@@ -66,9 +66,9 @@ def r1(pattern, text, group=1, default=None):
     return default
 
 
-def r2(pattern, text, repl=''):
+def r2(pattern, text, repl='', default=None):
     if not text:
-        return None
+        return default
     return re.sub(pattern, repl, text, re.IGNORECASE | re.DOTALL).strip()
 
 
@@ -86,7 +86,7 @@ def get_item_name(origin_name: str):
     return origin_name
 
 
-def run_handler(module_name, action, **kwargs):
+def run_handler(module_name, action_name, **kwargs):
     for key in list(kwargs.keys()):
         if not kwargs.get(key):
             del kwargs[key]
@@ -97,7 +97,7 @@ def run_handler(module_name, action, **kwargs):
             instance = obj()
             instance.config = kwargs
             getattr(instance, f'action_before')()
-            getattr(instance, f'action_{action}')()
+            getattr(instance, f'action_{action_name}')()
             getattr(instance, f'action_after')()
             break
 

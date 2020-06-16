@@ -25,11 +25,11 @@ def cli(ctx, **kwargs):
 
     ctx.obj = kwargs
     if ctx.invoked_subcommand is None:
-        _run(ctx, 'index')
+        _run(ctx, 'index', **kwargs)
 
 
 @cli.command()
-@click.option('--url', type=str, required=True)
+@click.option('--url', type=str, required=True, default='')
 @click.pass_context
 def detail(ctx, **kwargs):
     _run(ctx, 'detail', **kwargs)

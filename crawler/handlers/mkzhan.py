@@ -4,7 +4,7 @@ import random
 import requests
 
 from ..libs.base_handler import BaseHandler
-from ..libs.common import format_url, get_item_name, format_view
+from ..libs.common import format_url, get_item_name, format_view, HTTP_PROXIES
 
 
 class MkZhan(BaseHandler):
@@ -25,7 +25,7 @@ class MkZhan(BaseHandler):
         self.publish_session = requests.session()
 
     def before_run(self):
-        if not self.proxies:
+        if not HTTP_PROXIES:
             self.publish_url = 'https://api.mh01.net'
 
         publish_url = self.config.get('publish')
@@ -59,7 +59,8 @@ class MkZhan(BaseHandler):
             print(args[0], args[1], book)
         else:
             try:
-                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book, session=self.publish_session)
+                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book,
+                                    session=self.publish_session)
                 res = json.loads(res)
                 self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res['msg']))
                 return book

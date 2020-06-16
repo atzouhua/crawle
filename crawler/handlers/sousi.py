@@ -3,7 +3,6 @@ from urllib import parse
 
 from ..libs.base_handler import BaseHandler
 from ..libs.common import r2, r1
-from ..libs.db import DB
 
 
 class SouSi(BaseHandler):
@@ -27,24 +26,76 @@ class SouSi(BaseHandler):
             return None
 
         doc = data.get('doc')
-        params = self.get_default_params(doc, data['url'])
-        self.save(params, i=args[0], n=args[1])
+        try:
+            params = self.get_default_params(doc, data['url'])
+            if not params:
+                return None
+
+            if self.config.get('debug'):
+                print(args[0], args[1], params)
+            else:
+                self.save(params, i=args[0], n=args[1])
+        except Exception as e:
+            self.logger.error(task)
+            self.logger.exception(e)
 
     def get_default_params(self, doc, url):
-        title = doc(self.post_rule.get('title')).text()
-        star = r1(r'((VOL|NO)\.\d+)\s([^[]+)', title, 3, '')
-        category = doc('.down_r_title a').eq(-1).text().replace('写真', '').replace('套图', '')
-        category_en = r1(r'[a-zA-Z0-9]+', category, 0)
-        if category_en and len(category_en) > 2 and category != category_en:
-            category = category.replace(category_en, '')
-        parse_result = parse.urlparse(url)
-        alias = str(parse_result.path).replace('guochantaotu/', '').split('/')[1].lower()
+        title = self.cc.convert(doc(self.post_rule.get('title')).text())
+        _find = re.findall(r'\[[^\]]+\]', title)
+        if len(_find) < 2:
+            return None
+
+        title = r2(r'\[[^\]]+\]|期|匿名写真|泰国旅拍合集|第二套|大理旅拍|第一刊|青春少女—|第四刊|越南芽庄|第三刊|三亚旅拍猩一|模特合集|动感之星|ShowTimeDancer', title)
+        title = r2(r'\[[^\s]*|官网原图|原创写真|如壹写真|新模试镜|模特|（|）|上海|套图|一|二|三|原版|爱尤物专辑|高清重置|_', title)
+        star = r1(r'((VOL|NO)\.\d+)([^[]+)', title, 3, '')
+        if not star:
+            star = title.split(' ')[-1]
+
+        if star and star.find('：') != -1:
+            star = star.split('：')[-1]
+
+        if star and star.find('家庭教师') != -1 or star.lower().find('no') != -1 or star.lower().find(
+                'Vol') != -1 or star.find(
+            '[') != -1 or star.find('合辑') != -1 or star.find('刊') != -1 or len(star) == 1:
+            star = ''
+
+        alias = r1(r'[a-zA-Z0-9]+', _find[0], 0)
+        category = r2(r'写真|\[|\]', _find[0])
+        if category in ['XiuRen', '秀人网']:
+            category = '秀人网'
+            if not alias:
+                alias = 'xiuren'
+
+        if category in ['丽柜']:
+            alias = 'ligui'
+
+        if category != alias:
+            category = r2(rf'{alias}', category)
+
+        if title.find('美媛馆') != -1 or category.find('美媛馆') != -1:
+            category = '美媛馆'
+            alias = 'mygirl'
+            title = r2('美媛馆', title)
+
+        if not alias:
+            parse_result = parse.urlparse(url)
+            alias = str(parse_result.path).replace('guochantaotu/', '').split('/')[1].lower()
+
         pwd, down_link = get_download_link_pwd(doc)
         status = 1 if down_link else 0
+        if category == alias:
+            title = f'{category} {title}'
+        elif alias:
+            title = f'{alias.upper()}{category} {title}'
+
+        title = r2('：', title, ' ')
+        if star and star.find(' ') != -1:
+            star = star.split(' ')[-1]
+
         return {
-            'title': title,
-            'alias': alias,
-            'star': star.replace('匿名寫真', '').replace('匿名写真', ''),
+            'title': title.upper().strip(),
+            'alias': alias.lower().strip(),
+            'star': r2('套图|（二）|（一）|年费视频|黑网美腿|(一)|(二)', star, '', ''),
             'category': category,
             'download_link': down_link,
             'pwd': pwd,

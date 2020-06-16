@@ -2,6 +2,8 @@ import logging
 import threading
 import time
 
+from opencc import OpenCC
+
 from .base_crawle import BaseCrawler
 from .common import format_url, get_page_url_list
 from .db import DB
@@ -18,6 +20,7 @@ class BaseHandler(BaseCrawler):
         self.begin_tme = time.perf_counter()
         self.table = ''
         self.lock = threading.Lock()
+        self.cc = OpenCC('t2s')
 
     def action_before(self):
         self.rule.update(self.config)
