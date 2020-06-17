@@ -10,7 +10,7 @@ logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.INFO)
 
 
 @click.group(invoke_without_command=True)
-@click.argument('handler', nargs=1, default='')
+@click.argument('handler', nargs=1, default='sousi')
 @click.option('--start-page', type=int, default=1)
 @click.option('--end-page', type=int, default=1)
 @click.option('--page-url', type=str)
@@ -29,7 +29,7 @@ def cli(ctx, **kwargs):
 
 
 @cli.command()
-@click.option('--url', type=str, required=True, default='http://www.sosi55.com/guochantaotu/3Agirl/2014/0328/19508.html')
+@click.option('--url', type=str, required=True, default='http://www.sosi55.com/guochantaotu/disi/2014/0415/19771.html')
 @click.pass_context
 def detail(ctx, **kwargs):
     _run(ctx, 'detail', **kwargs)

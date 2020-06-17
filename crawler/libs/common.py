@@ -71,8 +71,8 @@ def r3(pattern, text, group=1, default=None):
         return default
 
     m = re.search(pattern, text, re.IGNORECASE)
-    groups = m.groups()
-    if groups:
+    if m:
+        groups = m.groups()
         return groups[group]
     return default
 
