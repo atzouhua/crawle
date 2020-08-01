@@ -2,7 +2,6 @@ requests~=2.21.0
 pyquery~=1.4.0
 pymysql~=0.9.3
 progress~=1.5
-aria2p[tui]~=0.9.1
 Click~=7.0
-Pillow~=6.2.1
-opencc-python-reimplemented
+python-dotenv
+psycopg2
