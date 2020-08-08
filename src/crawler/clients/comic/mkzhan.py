@@ -1,10 +1,8 @@
 import json
 import random
 
-import requests
-
-from ..libs.base_client import BaseClient
-from ..libs.common import format_url, get_item_name, format_view, HTTP_PROXIES
+from crawler.libs.base_client import BaseClient
+from crawler.libs.common import format_url, get_item_name, format_view
 
 
 class MkZhan(BaseClient):
@@ -12,25 +10,14 @@ class MkZhan(BaseClient):
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.mkzhan.com'
-        self.publish_url = 'http://hahamh.me'
+        self.default_publish_url = 'http://hahamh.me' if self.dev_env else 'https://api.mh01.net'
         self.is_update = False
         self.rule = {
             'page_url': '/category/?page=%page',
-            'end_page': 1,
-            'start_page': 1,
             'page_rule': {'list': '.common-comic-item .comic__title a'},
             'post_rule': {},
             'base_url': self.base_url
         }
-        self.publish_session = requests.session()
-
-    def before_run(self):
-        if not HTTP_PROXIES:
-            self.publish_url = 'https://api.mh01.net'
-
-        publish_url = self.config.get('publish')
-        if publish_url:
-            self.publish_url = publish_url
 
     def action_update(self):
         self.is_update = True
@@ -49,23 +36,16 @@ class MkZhan(BaseClient):
                 name = element.attr('alt')
                 banners.append({'name': name, 'src': src})
         data = {'banners': json.dumps(banners, ensure_ascii=False)}
-        res = self.get_html(format_url('/api/banner', self.publish_url), data=data)
-        print(res)
+        return self.publish_api(data, 1, 1)
 
     def detail_handler(self, task, *args):
-        doc = self.doc(task)
-        book = self._get_book_params(doc)
-        if self.config.get('debug'):
-            print(args[0], args[1], book)
-        else:
-            try:
-                res = self.get_html(format_url('/api/post-save', self.publish_url), data=book,
-                                    session=self.publish_session)
-                res = json.loads(res)
-                self.processing(args[0], args[1], '{}: publish: {}'.format(book['title'], res['msg']))
-                return book
-            except Exception as e:
-                self.logger.exception(e)
+        try:
+            doc = self.doc(task)
+            book = self._get_book_params(doc)
+            return self.publish_api(book, *args)
+        except Exception as e:
+            self.logger.info(f"{args[0]}/{args[1]} {e}")
+            return None
 
     def _get_book_params(self, doc):
         _container = doc('.de-container')
@@ -103,13 +83,14 @@ class MkZhan(BaseClient):
                 book_items = book_items[0:3]
                 thread_num = 3
 
-            item_result = self.crawl(book_items, self.item_handler, thread_num=thread_num, chunk_size=10)
+            chunk_size = 1 if self.is_update else 5
+            item_result = self.crawl(book_items, self.item_handler, thread_num=thread_num, chunk_size=chunk_size)
             if item_result and len(item_result):
                 params['last_item'] = item_result[-1].get('origin_name')
                 params['items'] = json.dumps(item_result, ensure_ascii=False)
         return params
 
-    def item_handler(self, task, *args, **kwargs):
+    def item_handler(self, task, *args):
         doc = self.doc(task)
         elements = doc('.rd-article-wr .rd-article__pic img')
         origin_item_name = doc('.last-crumb').text()

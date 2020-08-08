@@ -2,11 +2,10 @@
 import os
 from sys import path, argv
 
-import crawler
-
 _src_dir = '%s/src/' % os.path.dirname(os.path.realpath(__file__))
 _filepath = os.path.dirname(argv[0])
 path.insert(1, os.path.join(_filepath, _src_dir))
 
 if __name__ == '__main__':
+    import crawler
     crawler.main()

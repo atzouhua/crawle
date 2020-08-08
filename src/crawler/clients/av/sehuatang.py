@@ -1,8 +1,8 @@
-from ..libs.base import BaseHandler
-from ..libs.common import r1
+from crawler.libs.base_client import BaseClient
+from crawler.libs.common import r1
 
 
-class SeHuaTang(BaseHandler):
+class SeHuaTang(BaseClient):
 
     def __init__(self):
         super().__init__()
@@ -58,6 +58,7 @@ class SeHuaTang(BaseHandler):
                 star_list.append(element.text())
             return thumbnail, images, star_list
         except Exception as e:
+            self.logger.debug(e)
             doc = self.doc('http://www.jav321.com/search', {'sn': alias})
             elements = doc('.row .col-md-3 .col-xs-12 a img')
             images = []

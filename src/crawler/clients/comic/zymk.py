@@ -3,7 +3,7 @@ import re
 
 import pyquery
 
-from ..libs.base_client import BaseClient
+from crawler.libs.base_client import BaseClient
 
 
 class Zymk(BaseClient):

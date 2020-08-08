@@ -3,7 +3,7 @@ import threading
 import time
 
 from .base_crawle import BaseCrawler
-from .common import format_url, get_page_url_list
+from .common import format_url, DEV_ENV
 from .db import DB
 
 
@@ -18,19 +18,16 @@ class BaseClient(BaseCrawler):
         self.begin_tme = time.perf_counter()
         self.table = ''
         self.lock = threading.Lock()
+        self.dev_env = DEV_ENV
 
     def action_before(self):
-        self.rule.update(self.config)
-        self.config = self.rule
+        pass
 
     def action_after(self):
-        if len(self.result):
-            DB.insert_all(self.table, self.result)
-            self.result = []
         self.process_time()
 
     def action_index(self):
-        url_list = get_page_url_list(**self.config)
+        url_list = self.get_page_url_list()
         n = len(url_list)
         if not n:
             self.logger.warning('empty url list.')
@@ -40,10 +37,11 @@ class BaseClient(BaseCrawler):
         task_count = len(tasks)
         self.logger.info(f'task count: {task_count}')
         if task_count:
-            self.crawl(tasks, self.detail_handler)
+            self.crawl(tasks, self.detail_handler, chunk_size=getattr(self, 'chunk_size'))
 
     def action_detail(self):
-        self.crawl([self.config.get('url')], self.detail_handler)
+        detail_url: str = getattr(self, 'detail_url')
+        self.crawl(detail_url.split(','), self.detail_handler)
 
     def page_handler(self, task, *args):
         title_rule = self.page_rule.get('title')
@@ -91,6 +89,19 @@ class BaseClient(BaseCrawler):
     def processing(self, i, n, message):
         self.logger.info(f"[{i}/{n}]:{message}")
 
+    def publish_api(self, data, *args):
+        if getattr(self, 'test'):
+            self.logger.info(f"{args[0]}/{args[1]} {data['title']}")
+            return data
+
+        publish_url = getattr(self, 'publish_url')
+        if not publish_url:
+            publish_url = getattr(self, 'default_publish_url')
+
+        result = self.fetch(format_url('/api/post-save', publish_url), data=data).json()
+        self.logger.info(f"{args[0]}/{args[1]} {data['title']} {str(result)}")
+        return result
+
     def save(self, params, message=None, db_save=True, **kwargs):
         if not message:
             message = params['title']
@@ -108,8 +119,24 @@ class BaseClient(BaseCrawler):
 
     @property
     def post_rule(self):
-        return self.config.get('post_rule')
+        return self.rule.get('post_rule')
 
     @property
     def page_rule(self):
-        return self.config.get('page_rule')
+        return self.rule.get('page_rule')
+
+    def get_page_url_list(self):
+        tasks = []
+        page_url = getattr(self, 'page_url') or self.rule.get('page_url')
+        start_page = getattr(self, 'start_page') or self.rule.get('start_page')
+        end_page = getattr(self, 'end_page') or self.rule.get('end_page')
+
+        if end_page < start_page:
+            end_page = start_page
+
+        for i in range(start_page, end_page + 1):
+            url = page_url.replace('%page', str(i))
+            tasks.append(format_url(url, self.rule.get('base_url')))
+
+        tasks.reverse()
+        return tasks

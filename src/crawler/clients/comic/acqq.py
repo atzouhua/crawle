@@ -4,8 +4,8 @@ import re
 
 import pyquery
 
-from ..libs.base_client import BaseClient
-from ..libs.common import format_url, r1
+from crawler.libs.base_client import BaseClient
+from crawler.libs.common import format_url, r1
 
 
 class AcQQ(BaseClient):

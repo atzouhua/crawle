@@ -3,8 +3,8 @@ from urllib import parse
 
 from opencc import OpenCC
 
-from ..libs.base_client import BaseClient
-from ..libs.common import r2, r1, r3
+from crawler.libs.base_client import BaseClient
+from crawler.libs.common import r2, r1, r3
 
 
 # pip install opencc-python-reimplemented
@@ -36,13 +36,9 @@ class SouSi(BaseClient):
             if not params:
                 return None
 
-            if self.config.get('debug'):
-                print(args[0], args[1], params)
-            else:
-                self.save(params, i=args[0], n=args[1])
+            return self.publish_api(params, *args)
         except Exception as e:
-            self.logger.error(task)
-            self.logger.exception(e)
+            self.logger.error(e)
 
     def get_default_params(self, doc, url):
         title = self.cc.convert(doc(self.post_rule.get('title')).text())

@@ -1,45 +1,41 @@
+import argparse
 import logging
 
-import click
-from dotenv import load_dotenv
-
-import crawler
+from .libs.common import find_modules, run_client
 
 DEFAULT_FORMATTER = '%(asctime)s[%(filename)s:%(lineno)d][%(levelname)s]:%(message)s'
 logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.INFO)
 
-load_dotenv()
 
+def cli():
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument('--page-url', type=str)
+    parent_parser.add_argument('--start-page', type=int, default=1)
+    parent_parser.add_argument('--end-page', type=int, default=1)
+    parent_parser.add_argument('--chunk-size', type=int, default=1)
+    parent_parser.add_argument('--action', type=str, default='index')
+    parent_parser.add_argument('--detail-url', type=str)
+    parent_parser.add_argument('--publish-url', type=str)
+    parent_parser.add_argument('--test', action='store_true')
+    parent_parser.add_argument('--debug', action='store_true')
 
-@click.group(invoke_without_command=True)
-@click.argument('handler', nargs=1, default='sousi')
-@click.option('--start-page', type=int, default=1)
-@click.option('--end-page', type=int, default=1)
-@click.option('--page-url', type=str)
-@click.option('--test', is_flag=True)
-@click.option('-P', '--progress', is_flag=True, help='debug mode')
-@click.option('--debug', is_flag=True)
-@click.option('--version', default=crawler.__version__)
-@click.pass_context
-def cli(ctx, **kwargs):
-    if kwargs.get('debug'):
+    parser = argparse.ArgumentParser()
+    modules = {}
+    subparsers = parser.add_subparsers(dest="client")
+    for module_name in find_modules('crawler.clients', False, True):
+        name = module_name.split('.')[-1]
+        subparsers.add_parser(name, parents=[parent_parser])
+        modules[name] = module_name
+
+    params = vars(parser.parse_args())
+    client = params.get('client')
+    if client:
+        params['client'] = modules[client]
+
+    if params.get('debug'):
         logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.DEBUG)
 
-    ctx.obj = kwargs
-    if ctx.invoked_subcommand is None:
-        _run(ctx, 'index', **kwargs)
-
-
-@cli.command()
-@click.option('--url', type=str, required=True, default='')
-@click.pass_context
-def detail(ctx, **kwargs):
-    _run(ctx, 'detail', **kwargs)
-
-
-def _run(ctx, action_name, **kwargs):
-    kwargs.update(ctx.obj)
-    # run_handler(kwargs.get('handler'), action_name, **kwargs)
+    run_client(**params)
 
 
 if __name__ == '__main__':

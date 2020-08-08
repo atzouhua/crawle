@@ -1,23 +1,22 @@
 import hashlib
 import inspect
+import logging
 import os
+import pkgutil
 import re
+import sys
 from importlib import import_module
-from os.path import dirname, realpath
 
 from dotenv import load_dotenv
 from progress.bar import Bar
 
+DEFAULT_FORMATTER = '%(asctime)s[%(filename)s:%(lineno)d][%(levelname)s]:%(message)s'
+logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.INFO)
+
 load_dotenv()
 
 PG_PASSWORD = os.environ.get('PG_PASSWORD')
-
-ROOT_PATH = dirname(dirname(dirname(realpath(__file__))))
-DATA_PATH = os.path.join(ROOT_PATH, 'data')
-LOG_PATH = os.path.join(DATA_PATH, 'logs')
-
-if not os.path.isdir(DATA_PATH):
-    os.makedirs(DATA_PATH)
+DEV_ENV = os.environ.get('ENV_CODE', 'dev') == 'dev'
 
 
 def md5(string: str):
@@ -87,39 +86,19 @@ def get_item_name(origin_name: str):
     return origin_name
 
 
-def run_handler(module_name, action_name, **kwargs):
-    for key in list(kwargs.keys()):
-        if not kwargs.get(key):
-            del kwargs[key]
-
-    module = import_module('.'.join(['crawler', 'handlers', module_name]))
+def run_client(**kwargs):
+    module = import_string(kwargs.get("client"))
     for name, obj in inspect.getmembers(module):
-        if inspect.isclass(obj) and obj.__bases__[0].__name__ == 'BaseHandler':
+        if inspect.isclass(obj) and obj.__bases__[0].__name__ == 'BaseClient':
             instance = obj()
-            instance.config = kwargs
+            for k, v in kwargs.items():
+                setattr(instance, k, v)
+
+            action_name = kwargs.get('action')
             getattr(instance, f'action_before')()
-            getattr(instance, f'action_{action_name}')()
+            data = getattr(instance, f'action_{action_name}')()
             getattr(instance, f'action_after')()
-            break
-
-
-def get_page_url_list(**kwargs):
-    tasks = []
-    page_url = kwargs.get('url') or kwargs.get('page_url')
-    base_url = kwargs.get('base_url')
-
-    start_page = kwargs.get('start_page') or 1
-    end_page = kwargs.get('end_page') or 1
-
-    if end_page < start_page:
-        end_page = start_page
-
-    for i in range(start_page, end_page + 1):
-        url = page_url.replace('%page', str(i))
-        tasks.append(format_url(url, base_url))
-
-    tasks.reverse()
-    return tasks
+            return data
 
 
 def format_view(views):
@@ -128,3 +107,42 @@ def format_view(views):
     elif views.find('万') != -1:
         views = float(views.replace('万', '')) * 10000 / 100
     return int(views)
+
+
+def import_string(import_name, silent=False):
+    import_name = str(import_name).replace(":", ".")
+    try:
+        try:
+            __import__(import_name)
+        except ImportError:
+            if "." not in import_name:
+                raise
+        else:
+            return sys.modules[import_name]
+
+        module_name, obj_name = import_name.rsplit(".", 1)
+        module = __import__(module_name, globals(), locals(), [obj_name])
+        try:
+            return getattr(module, obj_name)
+        except AttributeError as e:
+            raise ImportError(e)
+    except ImportError as e:
+        raise e
+
+
+def find_modules(import_path, include_packages=False, recursive=False):
+    module = import_string(import_path)
+    path = getattr(module, "__path__", None)
+    if path is None:
+        raise ValueError("%r is not a package" % import_path)
+    basename = module.__name__ + "."
+    for _importer, modname, ispkg in pkgutil.iter_modules(path):
+        modname = basename + modname
+        if ispkg:
+            if include_packages:
+                yield modname
+            if recursive:
+                for item in find_modules(modname, include_packages, True):
+                    yield item
+        else:
+            yield modname
