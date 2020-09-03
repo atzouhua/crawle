@@ -1,7 +1,7 @@
 import json
 import re
 
-from crawler.libs.base import BaseHandler
+from crawler.libs.base_client import BaseClient
 from crawler.libs.common import r1
 
 TAGS = ['処女', '女捜査官', '痴女', '家庭教師', '妊婦', '美脚', '風俗', '美尻', '巨乳', '美乳', '女医', '乱交', '顔射', '女教師', '淫語',
@@ -9,7 +9,7 @@ TAGS = ['処女', '女捜査官', '痴女', '家庭教師', '妊婦', '美脚', 
         '口内発射', '女子校生', '女子大生', '不倫', '巫女', '近親相姦', '食糞']
 
 
-class MgStage(BaseHandler):
+class MgStage(BaseClient):
 
     def __init__(self):
         super().__init__()
