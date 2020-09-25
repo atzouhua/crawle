@@ -3,22 +3,19 @@ import threading
 import time
 
 from .base_crawle import BaseCrawler
-from .common import format_url, DEV_ENV
-from .db import DB
+from .common import format_url
 
 
 class BaseClient(BaseCrawler):
 
     def __init__(self):
         super(BaseClient, self).__init__()
-        self.config = {}
         self.rule = {}
         self.result = []
-        self.tasks = []
         self.begin_tme = time.perf_counter()
         self.table = ''
         self.lock = threading.Lock()
-        self.dev_env = DEV_ENV
+        self.db = None
 
     def action_before(self):
         pass
@@ -102,7 +99,7 @@ class BaseClient(BaseCrawler):
         self.logger.info(f"{args[0]}/{args[1]} {data['title']} {str(result)}")
         return result
 
-    def save(self, params, message=None, db_save=True, **kwargs):
+    def save(self, params, message=None, db_save=False, **kwargs):
         if not message:
             message = params['title']
         self.processing(kwargs.get('i'), kwargs.get('n'), message)
@@ -113,9 +110,9 @@ class BaseClient(BaseCrawler):
 
     def _db_save(self, params: dict):
         self.result.append(params)
-        if len(self.result) >= 50:
-            DB.insert_all(self.table, self.result)
-            self.result = []
+        # if len(self.result) >= 50:
+        #     DB.insert_all(self.table, self.result)
+        #     self.result = []
 
     @property
     def post_rule(self):

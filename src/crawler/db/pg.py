@@ -6,7 +6,7 @@ from psycopg2.extras import RealDictCursor
 from crawler.libs.common import PG_PASSWORD
 
 
-class DB:
+class Pg:
 
     def __init__(self):
         self.conn = psycopg2.connect(host='satao.db.elephantsql.com', user='hyzyvxsn',

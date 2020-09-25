@@ -1,12 +1,11 @@
 # nohup rclone mount caoyufei_edu:/ /data/drive --allow-other --allow-non-empty --vfs-cache-mode writes >/dev/null 2>&1 &
 import os
-from pathlib import Path
 
 import aria2p
 
 from crawler.libs.base import BaseHandler
 from crawler.libs.common import md5
-from crawler.libs.db import DB
+from crawler.db.db import DB
 
 VIDEO_PATH = '/data/video'
 

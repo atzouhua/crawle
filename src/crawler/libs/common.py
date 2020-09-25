@@ -5,17 +5,17 @@ import os
 import pkgutil
 import re
 import sys
-from importlib import import_module
 
 from dotenv import load_dotenv
 from progress.bar import Bar
+
+from crawler.libs.config import Config
 
 DEFAULT_FORMATTER = '%(asctime)s[%(filename)s:%(lineno)d][%(levelname)s]:%(message)s'
 logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.INFO)
 
 load_dotenv()
 
-PG_PASSWORD = os.environ.get('PG_PASSWORD')
 DEV_ENV = os.environ.get('ENV_CODE', 'dev') == 'dev'
 
 
@@ -87,13 +87,12 @@ def get_item_name(origin_name: str):
 
 
 def run_client(**kwargs):
+    Config.batch_set(**kwargs)
+
     module = import_string(kwargs.get("client"))
     for name, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and obj.__bases__[0].__name__ == 'BaseClient':
             instance = obj()
-            for k, v in kwargs.items():
-                setattr(instance, k, v)
-
             action_name = kwargs.get('action')
             getattr(instance, f'action_before')()
             data = getattr(instance, f'action_{action_name}')()

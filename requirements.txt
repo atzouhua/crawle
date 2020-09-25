@@ -1,7 +1,7 @@
 requests~=2.21.0
 pyquery~=1.4.0
-pymysql~=0.9.3
 progress~=1.5
 Click~=7.0
-python-dotenv
-psycopg2
+python-dotenv~=0.14.0
+pymongo[srv]~=3.11.0
+cloudant~=2.14.0
