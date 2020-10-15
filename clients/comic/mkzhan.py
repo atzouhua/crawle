@@ -2,7 +2,7 @@ import json
 import random
 
 from libs.base_client import BaseClient
-from libs import format_url, get_item_name, format_view
+from libs.common import format_url, format_view, get_item_name
 
 
 class MkZhan(BaseClient):

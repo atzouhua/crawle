@@ -1,5 +1,5 @@
 from libs.base_client import BaseClient
-from libs import r1
+from libs.common import r1
 
 
 class SeHuaTang(BaseClient):
@@ -8,7 +8,7 @@ class SeHuaTang(BaseClient):
         super().__init__()
         self.base_url = 'https://www.sehuatang.net'
         self.rule = {
-            'page_url': 'forum.php?mod=forumdisplay&fid=%cid&page=%page',
+            'page_url': 'forum.php?mod=forumdisplay&fid=2&page=%page',
             'end_page': 1,
             'start_page': 1,
             'base_url': self.base_url,
@@ -24,7 +24,7 @@ class SeHuaTang(BaseClient):
         data = super(SeHuaTang, self).detail_handler(task, *args)
         title = data['title']
         magnet_link = data['magnet_link']
-        cid = int(self.config.get('cid'))
+        cid = 2
         status = 1 if magnet_link else 0
         params = {'url': data['url'], 'title': title, 'magnet_link': magnet_link, 'status': status, 'cid': cid}
         params.update(self.get_default_params(params, cid))
