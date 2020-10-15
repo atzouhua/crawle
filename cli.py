@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from .libs.common import find_modules, run_client
+from libs.common import find_modules, run_client
 
 DEFAULT_FORMATTER = '%(asctime)s[%(filename)s:%(lineno)d][%(levelname)s]:%(message)s'
 logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.INFO)
@@ -22,7 +22,7 @@ def cli():
     parser = argparse.ArgumentParser()
     modules = {}
     subparsers = parser.add_subparsers(dest="client")
-    for module_name in find_modules('crawler.clients', False, True):
+    for module_name in find_modules('clients', False, True):
         name = module_name.split('.')[-1]
         subparsers.add_parser(name, parents=[parent_parser])
         modules[name] = module_name

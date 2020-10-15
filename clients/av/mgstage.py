@@ -1,8 +1,8 @@
 import json
 import re
 
-from crawler.libs.base_client import BaseClient
-from crawler.libs.common import r1
+from libs.base_client import BaseClient
+from libs import r1
 
 TAGS = ['処女', '女捜査官', '痴女', '家庭教師', '妊婦', '美脚', '風俗', '美尻', '巨乳', '美乳', '女医', '乱交', '顔射', '女教師', '淫語',
         '異物挿入', '母乳', 'SM', '巨尻', '鬼畜', '監禁', '熟女', 'SF', '制服', '痴漢', 'VR', '素人', '爆乳', '美少女', '人妻', '泥酔', '騎乗位',

@@ -1,8 +1,8 @@
 import json
 import random
 
-from crawler.libs.base_client import BaseClient
-from crawler.libs.common import format_url, get_item_name, format_view
+from libs.base_client import BaseClient
+from libs import format_url, get_item_name, format_view
 
 
 class MkZhan(BaseClient):
@@ -10,7 +10,7 @@ class MkZhan(BaseClient):
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.mkzhan.com'
-        self.default_publish_url = 'http://hahamh.me' if self.dev_env else 'https://api.mh01.net'
+        self.publish_url = 'http://hahamh.me/api/post-save' if self.dev_env else 'https://api.mh01.net/api/post-save'
         self.is_update = False
         self.rule = {
             'page_url': '/category/?page=%page',

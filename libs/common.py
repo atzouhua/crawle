@@ -1,18 +1,13 @@
 import hashlib
 import inspect
-import logging
 import os
 import pkgutil
 import re
 import sys
 
 from dotenv import load_dotenv
-from progress.bar import Bar
 
-from crawler.libs.config import Config
-
-DEFAULT_FORMATTER = '%(asctime)s[%(filename)s:%(lineno)d][%(levelname)s]:%(message)s'
-logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.INFO)
+from .config import Config
 
 load_dotenv()
 
@@ -34,15 +29,6 @@ def format_url(url: str, base_url: str):
 
 def get_terminal_size():
     return os.get_terminal_size()
-
-
-def get_progress_bar(_max) -> Bar:
-    suffix = '%(percent)d%% [%(index)d/%(max)d] %(elapsed_td)s'
-    bar_prefix = ' ['
-    bar_suffix = '] '
-    return Bar('Processing', max=_max, suffix=suffix,
-               bar_prefix=bar_prefix,
-               bar_suffix=bar_suffix)
 
 
 def r1(pattern, text, group=1, default=None):

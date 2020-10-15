@@ -6,16 +6,16 @@ from pymongo.collection import Collection
 
 class MongoDB:
 
-    def __init__(self, dsn=None, database='crawler'):
+    def __init__(self, dsn=None, collection='root', database='crawler'):
         self._client = pymongo.MongoClient(f"{dsn}?retryWrites=true&w=majority")
         self._db = self._client.get_database(database)
-        self._col: Optional[Collection] = self._db.get_collection('crawler')
+        self._col: Optional[Collection] = self._db.get_collection(collection)
 
     def set_col(self, name):
         self._col = self._db.get_collection(name)
         return self
 
-    def save(self, data):
+    def save(self, data: dict):
         _id = data.get('_id')
         if _id:
             if self._col.find_one(_id):

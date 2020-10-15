@@ -1,10 +1,14 @@
+import datetime
+import os
 import re
 from urllib import parse
 
 from opencc import OpenCC
 
-from crawler.libs.base_client import BaseClient
-from crawler.libs.common import r2, r1, r3
+from db.cloudant import CloudAntDB
+from db.mongodb import MongoDB
+from libs.base_client import BaseClient
+from libs.common import r2, r1, r3, md5
 
 
 # pip install opencc-python-reimplemented
@@ -18,11 +22,13 @@ class SouSi(BaseClient):
             'page_url': '/guochantaotu/list_22_%page.html',
             'page_rule': {"list": '.yuanma_downlist_box .pic a'},
             'post_rule': {'title': '.single h1'},
-            'base_url': self.base_url
+            'base_url': self.base_url,
         }
         self.charset = 'gbk'
         self.table = 'ii_sousi'
         self.cc = OpenCC('t2s')
+        self.db = CloudAntDB(os.environ.get('ACCOUNT_NAME'), os.environ.get('API_KEY'), 'sousi')
+        self.db = MongoDB(os.environ.get('MONGO'), 'sousi')
 
     def detail_handler(self, task, *args):
         data = super().detail_handler(task, *args)
@@ -36,9 +42,17 @@ class SouSi(BaseClient):
             if not params:
                 return None
 
-            return self.publish_api(params, *args)
+            params['_id'] = md5(params['title'])
+            params['create_date'] = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime(
+                "%Y-%m-%d %H:%M:%S")
+
+            result = self.db.save(params)
+            self.logger.info(f"[{args[0]}/{args[1]}]:{result}")
         except Exception as e:
-            self.logger.error(e)
+            self.logger.exception(e)
+
+    def action_after(self):
+        pass
 
     def get_default_params(self, doc, url):
         title = self.cc.convert(doc(self.post_rule.get('title')).text())

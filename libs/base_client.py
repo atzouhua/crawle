@@ -3,7 +3,8 @@ import threading
 import time
 
 from .base_crawle import BaseCrawler
-from .common import format_url
+from .common import format_url, DEV_ENV
+from .config import Config
 
 
 class BaseClient(BaseCrawler):
@@ -16,6 +17,8 @@ class BaseClient(BaseCrawler):
         self.table = ''
         self.lock = threading.Lock()
         self.db = None
+        self.dev_env = DEV_ENV
+        self.publish_url = None
 
     def action_before(self):
         pass
@@ -34,10 +37,10 @@ class BaseClient(BaseCrawler):
         task_count = len(tasks)
         self.logger.info(f'task count: {task_count}')
         if task_count:
-            self.crawl(tasks, self.detail_handler, chunk_size=getattr(self, 'chunk_size'))
+            self.crawl(tasks, self.detail_handler, chunk_size=Config.get('chunk_size'))
 
     def action_detail(self):
-        detail_url: str = getattr(self, 'detail_url')
+        detail_url: str = Config.get('detail_url')
         self.crawl(detail_url.split(','), self.detail_handler)
 
     def page_handler(self, task, *args):
@@ -87,15 +90,12 @@ class BaseClient(BaseCrawler):
         self.logger.info(f"[{i}/{n}]:{message}")
 
     def publish_api(self, data, *args):
-        if getattr(self, 'test'):
+        if Config.get('test'):
             self.logger.info(f"{args[0]}/{args[1]} {data['title']}")
             return data
 
-        publish_url = getattr(self, 'publish_url')
-        if not publish_url:
-            publish_url = getattr(self, 'default_publish_url')
-
-        result = self.fetch(format_url('/api/post-save', publish_url), data=data).json()
+        publish_url = Config.get('publish_url', self.publish_url)
+        result = self.fetch(publish_url, data=data).json()
         self.logger.info(f"{args[0]}/{args[1]} {data['title']} {str(result)}")
         return result
 
@@ -124,9 +124,9 @@ class BaseClient(BaseCrawler):
 
     def get_page_url_list(self):
         tasks = []
-        page_url = getattr(self, 'page_url') or self.rule.get('page_url')
-        start_page = getattr(self, 'start_page') or self.rule.get('start_page')
-        end_page = getattr(self, 'end_page') or self.rule.get('end_page')
+        page_url = Config.get('page_url', self.rule.get('page_url'))
+        start_page = Config.get('start_page', self.rule.get('start_page'))
+        end_page = Config.get('end_page', self.rule.get('end_page'))
 
         if end_page < start_page:
             end_page = start_page

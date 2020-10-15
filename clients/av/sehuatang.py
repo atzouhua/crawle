@@ -1,5 +1,5 @@
-from crawler.libs.base_client import BaseClient
-from crawler.libs.common import r1
+from libs.base_client import BaseClient
+from libs import r1
 
 
 class SeHuaTang(BaseClient):

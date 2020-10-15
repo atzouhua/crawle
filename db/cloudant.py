@@ -7,9 +7,9 @@ class CloudAntDB:
         self.client = Cloudant.iam(account_name, api_key, connect=True)
         self.db = self.client.create_database(database)
 
-    def save(self, data):
-        _id = data['_id']
-        if _id not in self.db:
+    def save(self, data: dict):
+        _id = data.get('_id')
+        if not _id or _id not in self.db:
             return self.db.create_document(data)
 
         document = self._get_document(_id)

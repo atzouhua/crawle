@@ -2,8 +2,8 @@ import re
 
 import pyquery
 
-from crawler.libs.base_client import BaseClient
-from crawler.libs.common import r1
+from libs.base_client import BaseClient
+from libs import r1
 
 
 class TaoTu(BaseClient):
@@ -22,7 +22,7 @@ class TaoTu(BaseClient):
             'base_url': self.base_url
         }
 
-    def detail_handler(self, task, *args):
+    def detail_handler(slf, task, *args):
         if type(task) == dict:
             task = task.get('url')
 
