@@ -5,7 +5,6 @@ from urllib import parse
 
 from opencc import OpenCC
 
-from db.cloudant import CloudAntDB
 from db.mongodb import MongoDB
 from libs.base_client import BaseClient
 from libs.common import r2, r1, r3, md5
@@ -27,7 +26,7 @@ class SouSi(BaseClient):
         self.charset = 'gbk'
         self.table = 'ii_sousi'
         self.cc = OpenCC('t2s')
-        self.db = CloudAntDB(os.environ.get('ACCOUNT_NAME'), os.environ.get('API_KEY'), 'sousi')
+        # self.db = CloudAntDB(os.environ.get('ACCOUNT_NAME'), os.environ.get('API_KEY'), 'sousi')
         self.db = MongoDB(os.environ.get('MONGO'), 'sousi')
 
     def detail_handler(self, task, *args):
