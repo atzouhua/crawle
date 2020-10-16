@@ -24,6 +24,7 @@ jobs:
     - name: requirements
       run: |
         pip3 install -r requirements.txt
+        pip3 install opencc-python-reimplemented
 
     - name: Run
       run: |
