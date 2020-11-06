@@ -50,9 +50,6 @@ class SouSi(BaseClient):
         except Exception as e:
             self.logger.exception(e)
 
-    def action_after(self):
-        pass
-
     def get_default_params(self, doc, url):
         title = self.cc.convert(doc(self.post_rule.get('title')).text())
         _find = re.findall(r'\[[^\]]+\]', title)

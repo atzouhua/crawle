@@ -75,14 +75,16 @@ def get_item_name(origin_name: str):
 def run_client(**kwargs):
     Config.batch_set(**kwargs)
 
-    module = import_string(kwargs.get("client"))
+    client = kwargs.get("client")
+    module = import_string(kwargs.get('module'))
+
     for name, obj in inspect.getmembers(module):
-        if inspect.isclass(obj) and obj.__bases__[0].__name__ == 'BaseClient':
+        if inspect.isclass(obj) and client.find(obj.__name__.lower()) != -1:
             instance = obj()
             action_name = kwargs.get('action')
-            getattr(instance, f'action_before')()
+            getattr(instance, 'before_action')()
             data = getattr(instance, f'action_{action_name}')()
-            getattr(instance, f'action_after')()
+            getattr(instance, 'after_action')()
             return data
 
 

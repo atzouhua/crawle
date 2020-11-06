@@ -30,7 +30,7 @@ def cli():
     params = vars(parser.parse_args())
     client = params.get('client')
     if client:
-        params['client'] = modules[client]
+        params['module'] = modules[client]
 
     if params.get('debug'):
         logging.basicConfig(format=DEFAULT_FORMATTER, level=logging.DEBUG)

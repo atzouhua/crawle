@@ -7,13 +7,10 @@ class Config:
 
     @classmethod
     def get(cls, key: str, default=None):
-        try:
-            v = cls._config_data[key]
-            if v:
-                return v
-            return default
-        except KeyError:
-            return default
+        v = cls._config_data.get(key)
+        if v:
+            return v
+        return default
 
     @classmethod
     def batch_set(cls, **kwargs):

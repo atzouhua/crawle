@@ -20,10 +20,10 @@ class BaseClient(BaseCrawler):
         self.dev_env = DEV_ENV
         self.publish_url = None
 
-    def action_before(self):
+    def before_action(self):
         pass
 
-    def action_after(self):
+    def after_action(self):
         self.process_time()
 
     def action_index(self):
@@ -31,13 +31,18 @@ class BaseClient(BaseCrawler):
         n = len(url_list)
         if not n:
             self.logger.warning('empty url list.')
-            return
+            return None
 
         tasks = self.crawl(url_list, self.page_handler)
         task_count = len(tasks)
         self.logger.info(f'task count: {task_count}')
+
         if task_count:
-            self.crawl(tasks, self.detail_handler, chunk_size=Config.get('chunk_size'))
+            if Config.get('test'):
+                for i in tasks:
+                    self.logger.info(i)
+            else:
+                self.crawl(tasks, self.detail_handler, chunk_size=Config.get('chunk_size'))
 
     def action_detail(self):
         detail_url: str = Config.get('detail_url')
@@ -48,7 +53,7 @@ class BaseClient(BaseCrawler):
         thumbnail_rule = self.page_rule.get('thumbnail')
 
         self.logger.info('[%s/%s] Get page: %s' % (args[0], args[1], task))
-        doc = self.doc(task)
+        doc = self.document(task)
         elements = doc(self.page_rule.get('list'))
         result = []
         for element in elements.items():

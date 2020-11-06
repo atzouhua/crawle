@@ -14,7 +14,7 @@ class BaseCrawler:
 
     def __init__(self):
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36'}
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
         self.session = requests.session()
         self.session.mount('https://', HTTP_ADAPTER)
         self.session.mount('http://', HTTP_ADAPTER)
@@ -55,10 +55,15 @@ class BaseCrawler:
         response = self.session.request(method, url, data=data, **kwargs)
         response.encoding = self.charset
         if not response.ok:
-            raise Exception(url, response.status_code)
+            raise Exception(url, response.status_code, method)
         return response
 
     def doc(self, url, method='GET', **kwargs):
+        return self.document(url, method, **kwargs)
+
+    def document(self, url, method='GET', **kwargs):
         if type(url) == dict:
             url = url.get('url')
-        return pyquery.PyQuery(self.fetch(url, method, **kwargs).text)
+
+        html = self.fetch(url, method=method, **kwargs).text
+        return pyquery.PyQuery(html)
