@@ -4,6 +4,7 @@ import os
 import pkgutil
 import re
 import sys
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -22,9 +23,12 @@ def md5(string: str):
 
 
 def format_url(url: str, base_url: str):
-    if url.find('http') == -1:
-        url = '{}/{}'.format(base_url.strip('/'), url.strip('/'))
-    return url
+    if url.find('http') != -1:
+        return url
+    if url.find('//') != -1:
+        result = urlparse(base_url)
+        return f'{result.scheme}:{url}'
+    return '{}/{}'.format(base_url.strip('/'), url.strip('/'))
 
 
 def get_terminal_size():
