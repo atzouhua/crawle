@@ -28,7 +28,7 @@ class SouSi(BaseClient):
         self.cc = OpenCC('t2s')
         # self.db = CloudAntDB(os.environ.get('ACCOUNT_NAME'), os.environ.get('API_KEY'), 'sousi')
         self.db = MongoDB(os.environ.get('MONGO'), 'sousi')
-        self.ip = self.fetch('https://api.ipify.org/?format=json').text
+        self.ip = self.fetch('https://ipinfo.io/?token=8738948cf79dfd').json()
 
     def detail_handler(self, task, *args):
         data = super().detail_handler(task, *args)
@@ -45,7 +45,6 @@ class SouSi(BaseClient):
             params['_id'] = md5(params['title'])
             params['create_date'] = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime(
                 "%Y-%m-%d %H:%M:%S")
-            params['ip'] = self.ip
 
             result = self.db.save(params)
             self.logger.info(f"[{args[0]}/{args[1]}]:{result}")
