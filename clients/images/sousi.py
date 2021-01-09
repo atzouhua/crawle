@@ -3,7 +3,6 @@ import os
 import re
 from urllib import parse
 
-import chardet
 from opencc import OpenCC
 
 from db.mongodb import MongoDB
