@@ -3,3 +3,4 @@ pyquery
 python-dotenv
 pymongo[srv]
 cloudant
+opencc-python-reimplemented

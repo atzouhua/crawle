@@ -3,6 +3,7 @@ import os
 import re
 from urllib import parse
 
+import chardet
 from opencc import OpenCC
 
 from db.mongodb import MongoDB
@@ -26,9 +27,7 @@ class SouSi(BaseClient):
         self.charset = 'gbk'
         self.table = 'ii_sousi'
         self.cc = OpenCC('t2s')
-        # self.db = CloudAntDB(os.environ.get('ACCOUNT_NAME'), os.environ.get('API_KEY'), 'sousi')
         self.db = MongoDB(os.environ.get('MONGO'), 'sousi')
-        self.ip = self.fetch('https://api.ipify.org/?format=json').text
 
     def detail_handler(self, task, *args):
         data = super().detail_handler(task, *args)
@@ -42,23 +41,22 @@ class SouSi(BaseClient):
             if not params:
                 return None
 
-            params['_id'] = md5(params['title'])
+            params['_id'] = md5(params['origin_title'])
             params['create_date'] = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime(
                 "%Y-%m-%d %H:%M:%S")
-            params['ip'] = self.ip
 
-            result = self.db.save(params)
-            self.logger.info(f"[{args[0]}/{args[1]}]:{result}")
+            self.db.save(params)
+            self.logger.info(f"[{args[0]}/{args[1]}]:{params['origin_title']}")
         except Exception as e:
             self.logger.exception(e)
 
     def get_default_params(self, doc, url):
-        title = self.cc.convert(doc(self.post_rule.get('title')).text())
-        _find = re.findall(r'\[[^\]]+\]', title)
+        origin_title = self.cc.convert(doc(self.post_rule.get('title')).text())
+        _find = re.findall(r'\[[^\]]+\]', origin_title)
         if len(_find) < 2:
             return None
 
-        title = r2(r'\[[^\]]+\]|期|匿名|写真|泰国旅拍合集|第二套|大理旅拍|第一刊|青春少女—|第四刊|越南芽庄|第三刊|三亚旅拍猩一|模特合集|动感之星|ShowTimeDancer', title)
+        title = r2(r'\[[^\]]+\]|期|匿名|写真|泰国旅拍合集|第二套|大理旅拍|第一刊|青春少女—|第四刊|越南芽庄|第三刊|三亚旅拍猩一|模特合集|动感之星|ShowTimeDancer', origin_title)
         title = r2(r'\[[^\s]*|官网原图|原创写真|如壹写真|新模试镜|模特|（|）|上海|套图|一|二|三|原版|爱尤物专辑|高清重置|_|-|ROSI.CC|DISI.CC', title)
         title = r2(r'\.上|\.中|\.下|\+|经典001|MB|TuiGirl|第四印象|私房|白色|—', title)
         star = r3(r'MODEL(.*)|NO\.\d+(.*)|vol\.\d+(.*)', title, 1)
@@ -105,6 +103,7 @@ class SouSi(BaseClient):
             star = star.split(' ')[-1]
 
         return {
+            'origin_title': origin_title,
             'title': title.upper().strip(),
             'alias': alias.lower().strip(),
             'star': r2('套图|（二）|（一）|年费视频|黑网美腿|(一)|(二)|MODEL|车展|推女郎未流出版权图|第四印象|美缓馆|制服系列|美媛馆|2020.04.24《闺蜜情丝》', star, '',
@@ -144,6 +143,6 @@ def _find_down_link(link_list):
             return link
 
         if link.find('400gb') != -1 or link.find('ctfile') != -1 or link.find('474b') != -1 or link.find(
-                't00y') != -1 or link.find('bego.cc') != -1:
+                't00y') != -1 or link.find('bego.cc') != -1 or link.find('n802') != -1:
             return link
     return ''
