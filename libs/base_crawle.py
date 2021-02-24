@@ -1,10 +1,11 @@
 import logging
-import os
 from concurrent import futures
 
 import pyquery
 import requests
 from requests.adapters import HTTPAdapter
+
+from libs.request import Request
 
 DEFAULT_POOL_SIZE = 100
 HTTP_ADAPTER = HTTPAdapter(pool_connections=DEFAULT_POOL_SIZE, pool_maxsize=DEFAULT_POOL_SIZE + 300)
@@ -22,18 +23,13 @@ class BaseCrawler:
         self.charset = 'utf-8'
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def crawl(self, tasks: list, task_handler, thread_num=5, chunk_size=None):
-        tasks.reverse()
+    def crawl(self, iterables, chunk_size=1):
         result_list = []
-        n = len(tasks)
-        if not chunk_size:
-            chunk_size, extra = divmod(n, (os.cpu_count() or 1) * 4)
-            chunk_size = min(5, chunk_size)
-
-        with futures.ThreadPoolExecutor(thread_num) as executor:
+        n = len(iterables)
+        with futures.ThreadPoolExecutor() as executor:
             try:
-                args = ((item, i + 1, n) for i, item in enumerate(tasks))
-                for result in executor.map(lambda a: task_handler(*a), args, chunksize=chunk_size):
+                args = ((item, (i + 1), n) for i, item in enumerate(iterables))
+                for result in executor.map(lambda a: self.callback(*a), args, chunksize=chunk_size):
                     if result:
                         if type(result) == list:
                             result_list.extend(result)
@@ -42,6 +38,12 @@ class BaseCrawler:
             except Exception as e:
                 self.logger.error(e)
         return result_list
+
+    def callback(self, request: Request, index, total):
+        request.doc = self.doc(request.url)
+        request.index = index
+        request.total = total
+        return getattr(request, 'callback')(request)
 
     def fetch(self, url, data=None, method=None, **kwargs):
         kwargs.setdefault('timeout', 10)
@@ -59,9 +61,6 @@ class BaseCrawler:
         return response
 
     def doc(self, url, method='GET', **kwargs):
-        return self.document(url, method, **kwargs)
-
-    def document(self, url, method='GET', **kwargs):
         if type(url) == dict:
             url = url.get('url')
 

@@ -12,8 +12,6 @@ from .config import Config
 
 load_dotenv()
 
-DEV_ENV = os.environ.get('ENV_CODE', 'dev') == 'dev'
-
 
 def md5(string: str):
     m = hashlib.md5()
@@ -77,18 +75,17 @@ def get_item_name(origin_name: str):
 
 
 def run_client(**kwargs):
-    Config.batch_set(**kwargs)
-
     client = kwargs.get("client")
     module = import_string(kwargs.get('module'))
 
     for name, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and client.find(obj.__name__.lower()) != -1:
             instance = obj()
-            action_name = kwargs.get('action')
-            getattr(instance, 'before_action')()
-            data = getattr(instance, f'action_{action_name}')()
-            getattr(instance, 'after_action')()
+            instance.config = kwargs
+
+            getattr(instance, 'before_run')()
+            data = getattr(instance, 'run')()
+            getattr(instance, 'after_run')()
             return data
 
 
