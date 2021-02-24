@@ -14,15 +14,23 @@ class VmGirls(BaseClient):
             'base_url': self.base_url,
         }
 
-    def detail_handler(self, task, *args):
-        data = super().detail_handler(task, *args)
-        if not data:
-            return None
+    def action_index(self):
+        doc = self.doc(f'{self.base_url}/archives.html')
+        elements = doc('.archives a')
+        url_list = []
+        for element in elements.items():
+            url_list.append(f"{self.base_url}/{element.attr('href')}")
+        self.crawl(url_list[0:10], self.detail_handler, 5)
 
-        doc = data.get('doc')
+    def detail_handler(self, task, *args):
+        doc = self.doc(task)
         elements = doc('.nc-light-gallery a')
         title = doc('.post-title').text()
         images = []
         for element in elements.items():
             images.append(format_url(element.attr('href'), self.base_url))
-        print(title, images)
+
+        tag_list = []
+        for element in doc('.post-tags a').items():
+            tag_list.append(element.text())
+        print(task, title, tag_list)
