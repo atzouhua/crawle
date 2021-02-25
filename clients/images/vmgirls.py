@@ -16,11 +16,14 @@ class VmGirls(BaseClient):
     def parse(self, response):
         doc = response.doc
         data = []
+        i = 0
         for element in doc('.archives a').items():
             url = element.attr('href')
             if url.find('html') == -1:
                 continue
-
+            i += 1
+            if i > 10:
+                break
             url = format_url(url, self.base_url)
             data.append(Request(url, self.parse_page))
         return data
