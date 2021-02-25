@@ -1,5 +1,6 @@
 from libs.base_client import BaseClient
-from libs.common import format_url
+from libs.common import format_url, md5
+from libs.request import Request
 
 
 class VmGirls(BaseClient):
@@ -7,30 +8,38 @@ class VmGirls(BaseClient):
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.vmgirls.com'
-        self.rule = {
-            'page_url': '/page/%page',
-            'page_rule': {"list": '.list-home a.list-title', 'title': 'a.list-title'},
-            'post_rule': {},
-            'base_url': self.base_url,
-        }
+        self.start_url = f'{self.base_url}/archives.html'
 
-    def action_index(self):
-        doc = self.doc(f'{self.base_url}/archives.html')
-        elements = doc('.archives a')
-        url_list = []
-        for element in elements.items():
-            url_list.append(f"{self.base_url}/{element.attr('href')}")
-        self.crawl(url_list[0:10], self.detail_handler, 5)
+    def before_run(self):
+        self.col = self.db.get_collection('vmgrils')
 
-    def detail_handler(self, task, *args):
-        doc = self.doc(task)
-        elements = doc('.nc-light-gallery a')
+    def parse(self, response):
+        doc = response.doc
+        data = []
+        for element in doc('.archives a').items():
+            url = element.attr('href')
+            if url.find('html') == -1:
+                continue
+
+            url = format_url(url, self.base_url)
+            data.append(Request(url, self.parse_page))
+        return data
+
+    def parse_page(self, response):
+        doc = response.doc
+
         title = doc('.post-title').text()
-        images = []
-        for element in elements.items():
-            images.append(format_url(element.attr('href'), self.base_url))
+        image_list = []
+        for item in doc('.nc-light-gallery img').items():
+            image_list.append(f"https:{item.attr('src')}")
 
         tag_list = []
-        for element in doc('.post-tags a').items():
-            tag_list.append(element.text())
-        print(task, title, tag_list)
+        for item in doc('.post-tags a').items():
+            tag_list.append(item.text())
+
+        _id = md5(title)
+        self.logger.info(f"{response.index}/{response.total}: {title}.")
+
+        data = {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url}
+        self.col.update_one({'_id': _id}, {'$set': data}, True)
+        return data

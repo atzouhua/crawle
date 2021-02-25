@@ -1,51 +1,43 @@
 import logging
-import threading
+import os
 import time
 
+import pymongo
+
 from .base_crawle import BaseCrawler
-from .common import format_url, DEV_ENV
-from .config import Config
+from .common import format_url
+from .request import Request
 
 
 class BaseClient(BaseCrawler):
 
     def __init__(self):
         super(BaseClient, self).__init__()
-        self.rule = {}
-        self.result = []
         self.begin_tme = time.perf_counter()
-        self.table = ''
-        self.lock = threading.Lock()
-        self.db = None
-        self.dev_env = DEV_ENV
-        self.publish_url = None
+        self.rule = {}
+        self.config = {}
+        self.client = pymongo.MongoClient(os.environ.get('MONGO_URI'), connectTimeoutMS=10000)
+        self.db = self.client.get_database('db1')
+        self.col = None
 
-    def before_action(self):
+    def before_run(self):
         pass
 
-    def after_action(self):
+    def after_run(self):
         self.process_time()
 
-    def action_index(self):
-        url_list = self.get_page_url_list()
-        n = len(url_list)
-        if not n:
-            self.logger.warning('empty url list.')
-            return None
+    def run(self):
+        data = self.crawl(self.get_start_url_list())
+        while 1:
+            if len(data) <= 0 or type(data[0]) != Request:
+                break
+            data = self.crawl(data, thread=self.config.get('thread'), chunk_size=self.config.get('chunk_size'))
 
-        tasks = self.crawl(url_list, self.page_handler)
-        task_count = len(tasks)
-        self.logger.info(f'task count: {task_count}')
-
-        if task_count:
-            if Config.get('test'):
-                for i in tasks:
-                    self.logger.info(i)
-            else:
-                self.crawl(tasks, self.detail_handler, chunk_size=Config.get('chunk_size'))
+    def parse(self, response):
+        pass
 
     def action_detail(self):
-        detail_url: str = Config.get('detail_url')
+        detail_url: str = self.config.get('detail_url')
         self.crawl(detail_url.split(','), self.detail_handler)
 
     def page_handler(self, task, *args):
@@ -53,7 +45,7 @@ class BaseClient(BaseCrawler):
         thumbnail_rule = self.page_rule.get('thumbnail')
 
         self.logger.info('[%s/%s] Get page: %s' % (args[0], args[1], task))
-        doc = self.document(task)
+        doc = self.doc(task)
         elements = doc(self.page_rule.get('list'))
         result = []
         for element in elements.items():
@@ -94,30 +86,30 @@ class BaseClient(BaseCrawler):
     def processing(self, i, n, message):
         self.logger.info(f"[{i}/{n}]:{message}")
 
-    def publish_api(self, data, *args):
-        if Config.get('test'):
-            self.logger.info(f"{args[0]}/{args[1]} {data['title']}")
-            return data
-
-        publish_url = Config.get('publish_url', self.publish_url)
-        result = self.fetch(publish_url, data=data).json()
-        self.logger.info(f"{args[0]}/{args[1]} {data['title']} {str(result)}")
-        return result
+    # def publish_api(self, data, *args):
+    #     if Config.get('test'):
+    #         self.logger.info(f"{args[0]}/{args[1]} {data['title']}")
+    #         return data
+    #
+    #     publish_url = Config.get('publish_url', self.publish_url)
+    #     result = self.fetch(publish_url, data=data).json()
+    #     self.logger.info(f"{args[0]}/{args[1]} {data['title']} {str(result)}")
+    #     return result
 
     def save(self, params, message=None, db_save=False, **kwargs):
         if not message:
             message = params['title']
-        self.processing(kwargs.get('i'), kwargs.get('n'), message)
-        if db_save:
-            self.lock.acquire()
-            self._db_save(params)
-            self.lock.release()
+        # self.processing(kwargs.get('i'), kwargs.get('n'), message)
+        # if db_save:
+        #     self.lock.acquire()
+        #     self._db_save(params)
+        #     self.lock.release()
 
-    def _db_save(self, params: dict):
-        self.result.append(params)
-        # if len(self.result) >= 50:
-        #     DB.insert_all(self.table, self.result)
-        #     self.result = []
+    # def _db_save(self, params: dict):
+    #     self.result.append(params)
+    #     # if len(self.result) >= 50:
+    #     #     DB.insert_all(self.table, self.result)
+    #     #     self.result = []
 
     @property
     def post_rule(self):
@@ -127,18 +119,19 @@ class BaseClient(BaseCrawler):
     def page_rule(self):
         return self.rule.get('page_rule')
 
-    def get_page_url_list(self):
-        tasks = []
-        page_url = Config.get('page_url', self.rule.get('page_url'))
-        start_page = Config.get('start_page', self.rule.get('start_page'))
-        end_page = Config.get('end_page', self.rule.get('end_page'))
+    def get_start_url_list(self):
+        if hasattr(self, 'start_url'):
+            return [Request(self.start_url, self.parse)]
+
+        page_url = self.config.get('start_url', self.rule.get('start_url'))
+        start_page = self.config.get('start_page', self.rule.get('start_page'))
+        end_page = self.config.get('end_page', self.rule.get('end_page'))
 
         if end_page < start_page:
             end_page = start_page
 
+        data = []
         for i in range(start_page, end_page + 1):
             url = page_url.replace('%page', str(i))
-            tasks.append(format_url(url, self.rule.get('base_url')))
-
-        tasks.reverse()
-        return tasks
+            data.append(Request(format_url(url, self.rule.get('base_url')), self.parse))
+        return data
