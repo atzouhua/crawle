@@ -25,6 +25,7 @@ class BaseClient(BaseCrawler):
 
     def after_run(self):
         self.process_time()
+        self.client.close()
 
     def run(self):
         data = self.crawl(self.get_start_url_list())

@@ -1,0 +1,26 @@
+name: vmgrils
+
+  schedule:
+    - cron: '20 0 * * *'
+
+env:
+  MONGO_URI: ${{ secrets.MONGO_URI }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.6'
+
+    - name: requirements
+      run: |
+        pip3 install -r requirements.txt
+#        pip3 install opencc-python-reimplemented
+
+    - name: Run
+      run: |
+        python3 cli.py vmgirls
