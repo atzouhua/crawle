@@ -11,7 +11,7 @@ class VmGirls(BaseClient):
         self.start_url = f'{self.base_url}/archives.html'
 
     def before_run(self):
-        self.col = self.db.get_collection('vmgrils')
+        self.col = self.db.get_collection('vmgirls')
 
     def parse(self, response):
         doc = response.doc
