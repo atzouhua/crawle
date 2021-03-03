@@ -35,6 +35,16 @@ class BaseClient(BaseCrawler):
             data = self.crawl(data, thread=self.config.get('thread'), chunk_size=self.config.get('chunk_size'))
 
     def parse(self, response):
+        page_rule = self.rule.get('page_rule')
+        doc = response.doc
+        data = []
+        for element in doc(page_rule.get('list')).items():
+            url = element.attr('href')
+            url = format_url(url, self.rule.get('base_url'))
+            data.append(Request(url, self.parse_page))
+        return data
+
+    def parse_page(self, response):
         pass
 
     def action_detail(self):
@@ -124,9 +134,9 @@ class BaseClient(BaseCrawler):
         if hasattr(self, 'start_url'):
             return [Request(self.start_url, self.parse)]
 
-        page_url = self.config.get('start_url', self.rule.get('start_url'))
-        start_page = self.config.get('start_page', self.rule.get('start_page'))
-        end_page = self.config.get('end_page', self.rule.get('end_page'))
+        page_url = self.config.get('start_url') or self.rule.get('start_url')
+        start_page = self.config.get('start_page') or self.rule.get('start_page')
+        end_page = self.config.get('end_page') or self.rule.get('end_page')
 
         if end_page < start_page:
             end_page = start_page
