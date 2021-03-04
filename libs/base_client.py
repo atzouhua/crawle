@@ -68,7 +68,7 @@ class BaseClient(BaseCrawler):
         if hasattr(self, 'start_url'):
             return [Request(self.start_url, self.parse)]
 
-        page_url = self.config.get('start_url') or self.rule.get('start_url')
+        start_url = self.config.get('start_url') or self.rule.get('start_url')
         start_page = self.config.get('start_page') or self.rule.get('start_page')
         end_page = self.config.get('end_page') or self.rule.get('end_page')
 
@@ -76,8 +76,9 @@ class BaseClient(BaseCrawler):
             end_page = start_page
 
         data = []
+
         for i in range(start_page, end_page + 1):
             self.logger.info(f'fetch page {i}.')
-            url = page_url.replace('%page', str(i))
+            url = start_url.replace('%page', str(i))
             data.append(Request(format_url(url, self.rule.get('base_url')), self.parse))
         return data

@@ -1,4 +1,3 @@
-import json
 import re
 
 from libs.base_client import BaseClient
@@ -9,12 +8,11 @@ class Mgstage(BaseClient):
 
     def __init__(self):
         super().__init__()
-        self.base_url = 'https://www.mgstage.com/'
         self.rule = {
             'start_url': '/search/search.php?search_word=&sort=new&list_cnt=30&disp_type=thumb&page=%page',
             'page_rule': {"list": "div.rank_list li h5 a"},
             'post_rule': {"title": "h1.tag"},
-            'base_url': self.base_url
+            'base_url': 'https://www.mgstage.com/'
         }
 
     def before_run(self):
@@ -30,14 +28,16 @@ class Mgstage(BaseClient):
         if publish_time:
             publish_time = publish_time.replace('/', '-')
 
+        alias = response.url.strip('/').split('/')[-1]
         params = {
             'publish_time': publish_time,
-            'alias': response.url.strip('/').split('/')[-1],
+            'alias': alias,
             'thumbnail': doc('#EnlargeImage').attr('href'),
             'images': images,
             'title': _format_title(title),
             'star': star,
-            'tag': tag
+            'tag': tag,
+            'category': alias.split('-')[0]
         }
         self.logger.info(f"{response.index}/{response.total}: {params['alias']}.")
         return params
