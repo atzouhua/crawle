@@ -10,9 +10,6 @@ class VmGirls(BaseClient):
         self.base_url = 'https://www.vmgirls.com'
         self.start_url = f'{self.base_url}/archives.html'
 
-    def before_run(self):
-        self.col = self.db.get_collection('vmgirls')
-
     def parse(self, response):
         doc = response.doc
         data = []
@@ -40,9 +37,10 @@ class VmGirls(BaseClient):
         for item in doc('.post-tags a').items():
             tag_list.append(item.text())
 
-        _id = md5(title)
         self.logger.info(f"{response.index}/{response.total}: {title}.")
 
-        data = {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url}
-        self.col.update_one({'_id': _id}, {'$set': data}, True)
-        return data
+        return {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url}
+
+    def save(self, data):
+        self.do_save(data, 'vmgirls')
+

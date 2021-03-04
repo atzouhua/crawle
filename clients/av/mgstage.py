@@ -2,55 +2,48 @@ import json
 import re
 
 from libs.base_client import BaseClient
-from libs import r1
-
-TAGS = ['処女', '女捜査官', '痴女', '家庭教師', '妊婦', '美脚', '風俗', '美尻', '巨乳', '美乳', '女医', '乱交', '顔射', '女教師', '淫語',
-        '異物挿入', '母乳', 'SM', '巨尻', '鬼畜', '監禁', '熟女', 'SF', '制服', '痴漢', 'VR', '素人', '爆乳', '美少女', '人妻', '泥酔', '騎乗位',
-        '口内発射', '女子校生', '女子大生', '不倫', '巫女', '近親相姦', '食糞']
+from libs.common import r1
 
 
-class MgStage(BaseClient):
+class Mgstage(BaseClient):
 
     def __init__(self):
         super().__init__()
         self.base_url = 'https://www.mgstage.com/'
-        self.table = 'ii_mgstage'
         self.rule = {
-            'page_url': '/search/search.php?search_word=&sort=new&list_cnt=60&disp_type=thumb&page=%page',
-            'end_page': 1,
-            'start_page': 1,
+            'start_url': '/search/search.php?search_word=&sort=new&list_cnt=30&disp_type=thumb&page=%page',
             'page_rule': {"list": "div.rank_list li h5 a"},
             'post_rule': {"title": "h1.tag"},
             'base_url': self.base_url
         }
 
     def before_run(self):
-        super(MgStage, self).before_run()
+        super().before_run()
         self.session.cookies.set('adc', '1')
 
-    def detail_handler(self, task, *args):
-        data = super(MgStage, self).detail_handler(task, *args)
-
-        doc = data.get('doc')
+    def parse_page(self, response):
+        doc = response.doc
         star, tag = _get_star_tag(doc)
         images = _get_images(doc)
+        title = doc('h1.tag').text()
         publish_time = r1(r'(\d{4}/\d{1,2}/\d{1,2})', doc.html())
         if publish_time:
             publish_time = publish_time.replace('/', '-')
+
         params = {
             'publish_time': publish_time,
-            'alias': data['url'].strip('/').split('/')[-1],
+            'alias': response.url.strip('/').split('/')[-1],
             'thumbnail': doc('#EnlargeImage').attr('href'),
-            'images': json.dumps(images),
-            'url': data['url'],
-            'title': _format_title(data['title']),
+            'images': images,
+            'title': _format_title(title),
             'star': star,
             'tag': tag
         }
-        del data
+        self.logger.info(f"{response.index}/{response.total}: {params['alias']}.")
+        return params
 
-        print(params)
-        # self.save(params, i=args[0], n=args[1])
+    def save(self, data):
+        self.do_save(data, 'mgstage')
 
     def _get_makes(self):
         doc = self.doc('https://www.mgstage.com/ppv/makers.php')
@@ -64,17 +57,6 @@ class MgStage(BaseClient):
         data = list(set(data))
         print(data)
         print(len(data))
-
-    def get_tag(self):
-        doc = self.doc('https://www.mgstage.com/ppv/genres.php')
-        elements = doc('#genres_list a')
-        data = []
-        for element in elements.items():
-            tag = element.text()
-            r = re.search('[\u0800-\u4e00]', tag)
-            if not r:
-                data.append(tag)
-        print(list(set(data)))
 
 
 def _format_title(title):
@@ -94,9 +76,6 @@ def _get_images(doc):
         image_list.append(element.attr('href'))
 
     n = len(image_list)
-    if n > 10:
-        return image_list[0:10]
-
     if n and n < 5:
         end_image = image_list[-1]
         num = int(re.search(r'cap_e_(\d+)_', end_image).group(1))
@@ -108,17 +87,12 @@ def _get_images(doc):
 
 def _get_star_tag(doc):
     elements = doc('.detail_txt li')
-    tags = []
     if len(elements):
         return _star_tag(elements)
-    else:
-        element_tables = doc('table')
-        for element_table in element_tables.items():
-            html = element_table.html()
-            if html.find('ジャンル') != -1:
-                element_trs = element_table('table tr')
-                return _star_tag(element_trs)
-    return json.dumps([], ensure_ascii=False), json.dumps(tags)
+
+    element_trs = doc('.detail_data table tr')
+    return _star_tag(element_trs)
+    # return json.dumps([], ensure_ascii=False), json.dumps(tags)
 
 
 def _star_tag(elements):
@@ -127,19 +101,20 @@ def _star_tag(elements):
     for element in elements.items():
         text = element.text()
         if text.find('出演') != -1:
-            _star = element('td').text()
-            r = re.search('([0-9]+)', _star)
-            if not r:
-                star = _star
+            star = element('td').text().strip()
+            continue
 
         if text.find('ジャンル') != -1:
             tag_elements = element('a')
             for tag_element in tag_elements.items():
-                tag = tag_element.text()
-                if tag in TAGS:
+                tag = tag_element.text().strip()
+                if tag not in ['配信専用', '独占配信', '単体作品', '主観'] and '上作品' not in tag:
                     tags.append(tag)
     if star:
+        r = re.search(r'(\d+)歳', star)
         star = star.split(' ')
+        if r:
+            star = [star[0]]
     else:
         star = []
-    return json.dumps(star, ensure_ascii=False), json.dumps(tags, ensure_ascii=False)
+    return star, tags
