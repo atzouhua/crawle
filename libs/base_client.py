@@ -14,7 +14,6 @@ class BaseClient(BaseCrawler):
         super(BaseClient, self).__init__()
         self.begin_tme = time.perf_counter()
         self.rule = {}
-        self.config = {}
         self.client = None
 
     def get_db(self, db='db1'):
@@ -35,7 +34,7 @@ class BaseClient(BaseCrawler):
         while 1:
             if len(data) <= 0 or type(data[0]) != Request:
                 break
-            data = self.crawl(data, thread=self.config.get('thread'), chunk_size=self.config.get('chunk_size'))
+            data = self.crawl(data, thread=self.config.get('thread'))
         self.save(data)
 
     def save(self, data):

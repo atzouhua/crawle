@@ -22,10 +22,12 @@ class BaseCrawler:
 
         self.charset = 'utf-8'
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.config = {}
 
-    def crawl(self, iterables, thread=None, chunk_size=1):
+    def crawl(self, iterables, thread=None):
         result_list = []
         n = len(iterables)
+        chunk_size = int(self.config.get('chunk_size')) or 1
         with futures.ThreadPoolExecutor(thread) as executor:
             try:
                 args = ((item, (i + 1), n) for i, item in enumerate(iterables))

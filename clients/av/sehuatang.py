@@ -36,9 +36,6 @@ class SeHuaTang(BaseClient):
             return None
 
         _id = md5(alias)
-        data = {'alias': alias, 'magnet_link': magnet_link, '_id': _id}
-        try:
-            self.col.insert_one(data)
-        except Exception as e:
-            self.logger.error(e)
+        data = {'alias': alias, 'magnet_link': magnet_link}
+        self.col.update_one({'_id': _id}, {'$set': data}, True)
         return data
