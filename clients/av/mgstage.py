@@ -9,7 +9,7 @@ class Mgstage(BaseClient):
     def __init__(self):
         super().__init__()
         self.rule = {
-            'start_url': '/search/search.php?search_word=&sort=new&list_cnt=30&disp_type=thumb&page=%page',
+            'start_url': '/search/search.php?search_word=&sort=new&list_cnt=120&disp_type=thumb&page=%page',
             'page_rule': {"list": "div.rank_list li h5 a"},
             'post_rule': {"title": "h1.tag"},
             'base_url': 'https://www.mgstage.com/'
