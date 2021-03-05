@@ -1,6 +1,7 @@
 import re
 
 from libs.base_client import BaseClient
+from libs.common import md5
 
 
 class SeHuaTang(BaseClient):
@@ -29,7 +30,14 @@ class SeHuaTang(BaseClient):
         if not magnet_link:
             return None
 
-        return {'alias': alias, 'magnet_link': magnet_link}
+        _id = md5(alias)
+        return {'alias': alias, 'magnet_link': magnet_link, '_id': _id}
 
     def save(self, data):
-        self.do_save(data, 'sehuatang_mgstage')
+        db = self.get_db()
+        col = db.get_collection('mgstage')
+        for item in data:
+            try:
+                col.insert_one(item)
+            except Exception as e:
+                self.logger.error(e)
