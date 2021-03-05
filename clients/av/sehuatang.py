@@ -13,6 +13,11 @@ class SeHuaTang(BaseClient):
             'base_url': 'https://www.sehuatang.net',
             'page_rule': {'list': '#threadlisttableid tbody[id^="normalthread"] a.s'},
         }
+        self.col = None
+
+    def before_run(self):
+        db = self.get_db()
+        self.col = db.get_collection('sehuatang')
 
     def parse_page(self, response):
         doc = response.doc
@@ -31,13 +36,9 @@ class SeHuaTang(BaseClient):
             return None
 
         _id = md5(alias)
-        return {'alias': alias, 'magnet_link': magnet_link, '_id': _id}
-
-    def save(self, data):
-        db = self.get_db()
-        col = db.get_collection('mgstage')
-        for item in data:
-            try:
-                col.insert_one(item)
-            except Exception as e:
-                self.logger.error(e)
+        data = {'alias': alias, 'magnet_link': magnet_link, '_id': _id}
+        try:
+            self.col.insert_one(data)
+        except Exception as e:
+            self.logger.error(e)
+        return data
