@@ -32,4 +32,4 @@ class SeHuaTang(BaseClient):
         return {'alias': alias, 'magnet_link': magnet_link}
 
     def save(self, data):
-        self.do_save(data, 'sehuatang_mgstage')
+        self.do_save(data, 'sehuatang_mgstage', 'alias')
