@@ -1,7 +1,7 @@
 import re
 
 from libs.base_client import BaseClient
-from libs.common import r1
+from libs.common import r1, md5
 
 
 class Mgstage(BaseClient):
@@ -14,10 +14,13 @@ class Mgstage(BaseClient):
             'post_rule': {"title": "h1.tag"},
             'base_url': 'https://www.mgstage.com/'
         }
+        self.col = None
 
     def before_run(self):
         super().before_run()
         self.session.cookies.set('adc', '1')
+        db = self.get_db()
+        self.col = db.get_collection('mgstage')
 
     def parse_page(self, response):
         doc = response.doc
@@ -29,7 +32,7 @@ class Mgstage(BaseClient):
             publish_time = publish_time.replace('/', '-')
 
         alias = response.url.strip('/').split('/')[-1]
-        params = {
+        data = {
             'publish_time': publish_time,
             'alias': alias,
             'thumbnail': doc('#EnlargeImage').attr('href'),
@@ -39,11 +42,11 @@ class Mgstage(BaseClient):
             'tag': tag,
             'category': alias.split('-')[0]
         }
-        self.logger.info(f"{response.index}/{response.total}: {params['alias']}.")
-        return params
 
-    def save(self, data):
-        self.do_save(data, 'mgstage')
+        _id = md5(alias)
+        self.col.update_one({'_id': _id}, {'$set': data}, True)
+        self.logger.info(f"{response.index}/{response.total}: {data['alias']}.")
+        return data
 
     def _get_makes(self):
         doc = self.doc('https://www.mgstage.com/ppv/makers.php')

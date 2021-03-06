@@ -1,4 +1,5 @@
 import logging
+import time
 from concurrent import futures
 
 import pyquery
@@ -52,7 +53,7 @@ class BaseCrawler:
             return None
 
     def fetch(self, url, data=None, method=None, **kwargs):
-        kwargs.setdefault('timeout', 20)
+        kwargs.setdefault('timeout', 30)
         kwargs.setdefault('headers', self.headers)
         if data and method is None:
             method = 'POST'
@@ -60,11 +61,14 @@ class BaseCrawler:
         if method is None:
             method = 'GET'
 
-        response = self.session.request(method, url, data=data, **kwargs)
-        response.encoding = self.charset
-        if not response.ok:
-            raise Exception(url, response.status_code, method)
-        return response
+        response = None
+        for i in range(4):
+            response = self.session.request(method, url, data=data, **kwargs)
+            response.encoding = self.charset
+            if response.ok:
+                return response
+            time.sleep(1)
+        raise Exception(url, response.status_code, method)
 
     def doc(self, url, method='GET', **kwargs):
         if type(url) == dict:
