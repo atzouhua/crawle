@@ -25,3 +25,7 @@ jobs:
     - name: Run
       run: |
         python3 cli.py vmgirls
+
+    - name: Run
+      run: |
+        python3 cli.py sehuatang
