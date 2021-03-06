@@ -26,6 +26,13 @@ class BaseClient(BaseCrawler):
 
     def after_run(self):
         self.process_time()
+        if len(self.error_request):
+            db = self.get_db()
+            col = db.get_collection('error')
+            for item in self.error_request:
+                _id = md5(item)
+                col.update_one({'_id': _id}, {'$set': {'url': item}}, True)
+
         if self.client:
             self.client.close()
 

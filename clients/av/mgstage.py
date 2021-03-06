@@ -40,7 +40,8 @@ class Mgstage(BaseClient):
             'title': _format_title(title),
             'star': star,
             'tag': tag,
-            'category': alias.split('-')[0]
+            'category': alias.split('-')[0],
+            'status': 0
         }
 
         _id = md5(alias)

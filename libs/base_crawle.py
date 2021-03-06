@@ -24,6 +24,7 @@ class BaseCrawler:
         self.charset = 'utf-8'
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = {}
+        self.error_request = []
 
     def crawl(self, iterables, thread=None):
         result_list = []
@@ -49,6 +50,7 @@ class BaseCrawler:
             request.total = total
             return getattr(request, 'callback')(request)
         except Exception as e:
+            self.error_request.append(request.url)
             self.logger.error(e)
             return None
 

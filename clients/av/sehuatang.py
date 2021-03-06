@@ -35,6 +35,6 @@ class SeHuaTang(BaseClient):
         if not magnet_link:
             return None
 
-        data = {'alias': alias, 'magnet_link': magnet_link}
+        data = {'alias': alias, 'magnet_link': magnet_link, 'download': 0}
         self.col.update_one({'_id': md5(alias)}, {'$set': data}, True)
         return data
