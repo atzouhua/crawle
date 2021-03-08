@@ -1,4 +1,4 @@
-name: vmgrils
+name: main
 
 on:
   schedule:
@@ -29,3 +29,7 @@ jobs:
     - name: Run
       run: |
         python3 cli.py sehuatang
+
+    - name: Run
+      run: |
+        python3 cli.py mgstage
