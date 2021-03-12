@@ -60,6 +60,8 @@ class BaseClient(BaseCrawler):
         data = []
         for element in doc(page_rule.get('list')).items():
             url = element.attr('href')
+            if len(url) < 3:
+                continue
             url = format_url(url, self.rule.get('base_url'))
             data.append(Request(url, self.parse_page))
         return data

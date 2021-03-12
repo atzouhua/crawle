@@ -2,6 +2,7 @@ import re
 
 from libs.base_client import BaseClient
 from libs.common import r1, md5
+from libs.request import Request
 
 
 class Mgstage(BaseClient):
@@ -22,6 +23,25 @@ class Mgstage(BaseClient):
         db = self.get_db()
         self.col = db.get_collection('mgstage')
 
+    # def run(self):
+    #     tasks = []
+    #     db = self.get_db()
+    #     self.col = db.get_collection('error')
+    #
+    #     for item in self.col.find({"url": {'$regex': 'mgstage'}}):
+    #         # self.logger.info(item['url'])
+    #         tasks.append(Request(item['url'], self.parse_page))
+    #         self.col.delete_one({'_id': item['_id']})
+    #
+    #     self.col = db.get_collection('mgstage')
+    #
+    #     data = self.crawl(tasks)
+    #     while 1:
+    #         if len(data) <= 0 or type(data[0]) != Request:
+    #             break
+    #         data = self.crawl(data, thread=self.config.get('thread'))
+    #     self.save(data)
+
     def parse_page(self, response):
         doc = response.doc
         star, tag = _get_star_tag(doc)
@@ -32,6 +52,7 @@ class Mgstage(BaseClient):
             publish_time = publish_time.replace('/', '-')
 
         alias = response.url.strip('/').split('/')[-1]
+
         data = {
             'publish_time': publish_time,
             'alias': alias,
@@ -44,8 +65,7 @@ class Mgstage(BaseClient):
             'status': 0
         }
 
-        _id = md5(alias)
-        self.col.update_one({'_id': _id}, {'$set': data}, True)
+        self.col.update_one({'_id': md5(alias)}, {'$set': data}, True)
         self.logger.info(f"{response.index}/{response.total}: {data['alias']}.")
         return data
 

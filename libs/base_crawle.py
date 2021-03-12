@@ -63,14 +63,17 @@ class BaseCrawler:
         if method is None:
             method = 'GET'
 
-        response = None
+        e1 = None
         for i in range(4):
-            response = self.session.request(method, url, data=data, **kwargs)
-            response.encoding = self.charset
-            if response.ok:
-                return response
-            time.sleep(1)
-        raise Exception(url, response.status_code, method)
+            try:
+                response = self.session.request(method, url, data=data, **kwargs)
+                response.encoding = self.charset
+                if response.ok:
+                    return response
+            except Exception as e:
+                time.sleep(1)
+                e1 = e
+        raise Exception(url, e1)
 
     def doc(self, url, method='GET', **kwargs):
         if type(url) == dict:
