@@ -39,7 +39,7 @@ class VmGirls(BaseClient):
 
         self.logger.info(f"{response.index}/{response.total}: {title}.")
 
-        return {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url}
+        return {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url, 'download': 0}
 
     def save(self, data):
         self.do_save(data, 'vmgirls')
