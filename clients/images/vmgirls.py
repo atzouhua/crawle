@@ -39,8 +39,13 @@ class VmGirls(BaseClient):
 
         self.logger.info(f"{response.index}/{response.total}: {title}.")
 
-        return {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url, 'download': 0}
+        return {'title': title, 'image': image_list, 'tag': tag_list, 'url': response.url}
 
     def save(self, data):
-        self.do_save(data, 'vmgirls')
-
+        db = self.get_db()
+        col = db.get_collection('vmgirls')
+        for item in data:
+            _id = md5(item['title'])
+            if not col.find_one({'_id': _id}):
+                item['download'] = 0
+            col.update_one({'_id': _id}, {'$set': item}, True)
