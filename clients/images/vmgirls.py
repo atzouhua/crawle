@@ -48,4 +48,5 @@ class VmGirls(BaseClient):
             _id = md5(item['title'])
             if not col.find_one({'_id': _id}):
                 item['download'] = 0
+                item['imgur_id'] = ''
             col.update_one({'_id': _id}, {'$set': item}, True)
